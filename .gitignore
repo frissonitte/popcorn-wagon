@@ -7,6 +7,6 @@ venv/
 .idea/
 *.csv
 .env
-.db
+*.db*
 .sqlite3
 *.log
