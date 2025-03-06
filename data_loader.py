@@ -13,10 +13,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 app = create_app()
 
 try:
-    movies = pd.read_csv(f'{Config.CSV_PATH}/movies.csv')
-    ratings = pd.read_csv(f'{Config.CSV_PATH}/ratings.csv')
-    tags = pd.read_csv(f'{Config.CSV_PATH}/tags.csv')
-    links = pd.read_csv(f'{Config.CSV_PATH}/links.csv')
+    
+    movies = pd.read_csv(f'{Config.CSV_PATH}/movies.csv', encoding='utf-8', sep=',')
+    ratings = pd.read_csv(f'{Config.CSV_PATH}/ratings.csv', sep=',')
+    tags = pd.read_csv(f'{Config.CSV_PATH}/tags.csv', encoding='utf-8', sep=',')
+    links = pd.read_csv(f'{Config.CSV_PATH}/links.csv', sep=',')
 except FileNotFoundError as e:
     logging.error(f"Error reading CSV file: {e}")
     exit(1)

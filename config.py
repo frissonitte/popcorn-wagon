@@ -8,3 +8,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY')
     CSV_PATH = os.getenv('CSV_PATH', 'app/data')
+    HTML_PATH = os.getenv('HTML_PATH', 'app/templates')

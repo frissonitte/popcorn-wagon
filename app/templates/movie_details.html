@@ -1,0 +1,37 @@
+
+{% extends "layout.html" %}
+
+{% block title %}{{movie['title']}}{% endblock %}
+
+{% block main %}
+<body>
+  <div class="movie-container">
+    <div class="movie-poster">
+        {% if movie['poster_path'] %}
+            <img 
+                src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}"
+                loading="lazy"
+                alt="{{ movie['title'] }} Poster"
+            >
+        {% else %}
+            <img 
+                src="{{ url_for('static', filename='No-Image-Placeholder.svg') }}"
+                alt="No Image" 
+                loading="lazy"
+            >
+        {% endif %}
+    </div>
+    <div class="movie-details">
+      <h1>{{movie['title']}} </h1>
+      <p class="release-date">{{ movie['release_date'] | format_date }}</p>
+      <p class="genres">
+        {% for genre in movie['genres'] %}
+            {{ genre['name'] }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </p>
+      <p class="runtime">{{movie['runtime']}} minutes</p>
+      <p class="rating">Rating: {{movie['vote_average']}}/10</p>
+      <p class="overview">{{movie['overview']}}</p>
+    </div>
+  </div>
+{% endblock %}

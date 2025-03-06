@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block main %}
+<h1>Trending Movies</h1>
+<div id="trendingCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for movie in trending_movies %}
+            <button type="button" data-bs-target="#trendingCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+        {% endfor %}
+    </div>
+    <div class="carousel-inner">
+        {% for movie in trending_movies %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <a href="{{ url_for('main.movie_details', movie_id=movie['id']) }}" target="_blank">
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" class="d-block" alt="{{ movie['title'] }}">
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#trendingCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#trendingCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<h1>Popular Movies</h1>
+<div id="popularCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for movie in popular_movies %}
+            <button type="button" data-bs-target="#popularCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+        {% endfor %}
+    </div>
+    <div class="carousel-inner">
+        {% for movie in popular_movies %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <a href="{{ url_for('main.movie_details', movie_id=movie['id']) }}" target="_blank">
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" class="d-block" alt="{{ movie['title'] }}">
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#popularCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#popularCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+{% endblock %}
