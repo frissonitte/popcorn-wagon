@@ -1,4 +1,5 @@
 from datetime import datetime
+from flask import Flask
 
 def format_date(date_string):
     try:
@@ -6,3 +7,6 @@ def format_date(date_string):
         return date_obj.strftime("%m-%d-%Y")
     except ValueError:
         return date_string
+
+def register_filters(app: Flask):
+    app.jinja_env.filters['format_date'] = format_date

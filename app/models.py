@@ -1,6 +1,7 @@
 from app.extensions import db
 from sqlalchemy import CheckConstraint
 from enum import Enum
+from flask_login import UserMixin 
 
 class UserAction(Enum):
     RATED = 'rated'
@@ -44,12 +45,12 @@ class Tag(db.Model):
     movie = db.relationship('Movie', back_populates='tags')
     user = db.relationship('User', back_populates='tags')
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     
     userId = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
-    hash = db.Column(db.String(100), nullable=False)
+    hash = db.Column(db.String(255), nullable=False)
 
     ratings = db.relationship('Rating', back_populates='user', lazy="select")
     tags = db.relationship('Tag', back_populates='user', lazy="select")
@@ -58,6 +59,8 @@ class User(db.Model):
     user_list_items = db.relationship('UserListItems', back_populates='user', lazy="select")
     user_mapping = db.relationship('UserMapping', back_populates='user', lazy="joined")
 
+    def get_id(self):
+        return str(self.userId)
 class Link(db.Model):
     __tablename__ = 'links'
 
@@ -112,3 +115,4 @@ class UserMapping(db.Model):
     system_userId = db.Column(db.Integer, db.ForeignKey('users.userId'), unique=True)
 
     user = db.relationship('User', back_populates='user_mapping')
+

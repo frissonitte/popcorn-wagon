@@ -1,8 +1,9 @@
 from flask import Flask
 from config import Config
-from app.extensions import db, migrate
+from app.extensions import db, migrate,login_manager
 import app.models
-from .filters import format_date
+from .utils.date_utils import register_filters
+
 
 def create_app():
     app = Flask(__name__)
@@ -10,9 +11,13 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    app.jinja_env.filters['format_date'] = format_date
+    register_filters(app)
+    login_manager.init_app(app)
 
     from app.routes import init_routes
     init_routes(app)
+    
+    from app.auth import auth
+    app.register_blueprint(auth)
 
     return app
