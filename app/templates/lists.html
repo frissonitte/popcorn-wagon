@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}Lists{% endblock %}
+
+{% block main %}
+    <h2>My Lists</h2>
+    <div class="d-flex justify-content-end">
+        <a href="{{ url_for('main.create_list') }}" class="btn btn-primary me-4">New List</a>
+      </div>
+    {% if lists %}
+    <div class="movie-grid">
+        {% for list in lists %}
+            <div class="card v4 tight">
+                <div class="wrapper">
+                    <div class="image">
+                        <div class="poster">
+                            <a href="{{ url_for('main.list_details', listId=list.listId) }}" target="_blank">
+                                {% if list.background_image  %}
+                                    <img 
+                                        src="https://image.tmdb.org/t/p/w500{{ list.background_image }}"
+                                        sizes="(max-width: 768px) 90vw, 33vw"
+                                        loading="lazy"
+                                        alt="{{ list.background_image }}" 
+                                        class="poster-image"
+                                    >
+                                {% else %}
+                                    <img 
+                                        src="static/images/No-Image-Placeholder.svg" 
+                                        alt="No Image" 
+                                        class="poster-image" 
+                                        loading="lazy"
+                                    >
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="details">
+                        <div class="title">
+                            <a href="{{ url_for('main.list_details', listId=list.listId) }}" target="_blank">
+                                <h2>{{ list.list_name }}</h2>
+                            </a>
+                            <span class="create-date">{{ list.timestamp | format_date}}</span>
+                        </div>
+
+                        <div class="overview">
+                            <p>{{ list.items }}...</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>You have no lists yet.</p>
+    {% endif %}
+{% endblock %}
+
+

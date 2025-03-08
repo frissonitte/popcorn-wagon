@@ -13,7 +13,7 @@
     <div class="carousel-inner">
         {% for movie in trending_movies %}
             <div class="carousel-item {% if loop.first %}active{% endif %}">
-                <a href="{{ url_for('main.movie_details', movie_id=movie['id']) }}" target="_blank">
+                <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
                     <img src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" class="d-block" alt="{{ movie['title'] }}">
                 </a>
             </div>
@@ -39,7 +39,7 @@
     <div class="carousel-inner">
         {% for movie in popular_movies %}
             <div class="carousel-item {% if loop.first %}active{% endif %}">
-                <a href="{{ url_for('main.movie_details', movie_id=movie['id']) }}" target="_blank">
+                <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
                     <img src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" class="d-block" alt="{{ movie['title'] }}">
                 </a>
             </div>

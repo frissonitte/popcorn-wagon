@@ -1,8 +1,8 @@
-"""Initial migration.
+"""Initial migration
 
-Revision ID: ff59356c3c49
+Revision ID: 511e74f4e5d6
 Revises: 
-Create Date: 2025-03-05 11:17:13.009496
+Create Date: 2025-03-07 16:47:06.173946
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ff59356c3c49'
+revision = '511e74f4e5d6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,7 +27,7 @@ def upgrade():
     op.create_table('users',
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=100), nullable=False),
-    sa.Column('hash', sa.String(length=100), nullable=False),
+    sa.Column('hash', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('userId'),
     sa.UniqueConstraint('username')
     )
@@ -61,11 +61,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('userId', 'movieId')
     )
     op.create_table('user_lists',
+    sa.Column('listId', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('list_name', sa.String(length=100), nullable=False),
     sa.Column('timestamp', sa.TIMESTAMP(), nullable=True),
+    sa.Column('background_image', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['userId'], ['users.userId'], ),
-    sa.PrimaryKeyConstraint('userId', 'list_name')
+    sa.PrimaryKeyConstraint('listId')
     )
     op.create_table('user_mapping',
     sa.Column('movielens_userId', sa.Integer(), nullable=False),
@@ -78,8 +80,8 @@ def upgrade():
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('movieId', sa.Integer(), nullable=False),
     sa.Column('action', sa.Enum('RATED', 'REVIEWED', 'WATCHED', name='useraction'), nullable=False),
-    sa.Column('liked', sa.Integer(), nullable=True),
-    sa.Column('rating', sa.Integer(), nullable=True),
+    sa.Column('liked', sa.Boolean(), nullable=False),
+    sa.Column('rating', sa.REAL(), nullable=False),
     sa.Column('review', sa.String(length=255), nullable=True),
     sa.CheckConstraint('liked IN (-1, 0, 1)', name='liked_check'),
     sa.CheckConstraint('rating BETWEEN 1 AND 10', name='rating_check'),
@@ -88,14 +90,16 @@ def upgrade():
     sa.PrimaryKeyConstraint('userId', 'movieId', 'action', name='primary_key_constraint')
     )
     op.create_table('user_list_items',
-    sa.Column('userId', sa.Integer(), nullable=False),
+    sa.Column('itemId', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('listId', sa.Integer(), nullable=False),
     sa.Column('movieId', sa.Integer(), nullable=False),
-    sa.Column('list_name', sa.String(length=100), nullable=False),
+    sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('timestamp', sa.TIMESTAMP(), nullable=True),
-    sa.ForeignKeyConstraint(['list_name'], ['user_lists.list_name'], ),
+    sa.ForeignKeyConstraint(['listId'], ['user_lists.listId'], ),
     sa.ForeignKeyConstraint(['movieId'], ['movies.movieId'], ),
     sa.ForeignKeyConstraint(['userId'], ['users.userId'], ),
-    sa.PrimaryKeyConstraint('userId', 'movieId', 'list_name')
+    sa.PrimaryKeyConstraint('itemId'),
+    sa.UniqueConstraint('listId', 'movieId', name='unique_list_movie')
     )
     # ### end Alembic commands ###
 

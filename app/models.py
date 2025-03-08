@@ -1,7 +1,7 @@
 from app.extensions import db
-from sqlalchemy import CheckConstraint
+from sqlalchemy import CheckConstraint, UniqueConstraint
 from enum import Enum
-from flask_login import UserMixin 
+from flask_login import UserMixin
 
 class UserAction(Enum):
     RATED = 'rated'
@@ -18,8 +18,9 @@ class Movie(db.Model):
     ratings = db.relationship('Rating', back_populates='movie', lazy="select")
     tags = db.relationship('Tag', back_populates='movie', lazy="select")
     links = db.relationship('Link', back_populates='movie', lazy="select")
-    user_movie_data = db.relationship('UserMovieData', back_populates='movie', lazy="select")
     user_list_items = db.relationship('UserListItems', back_populates='movie', lazy="select")
+    user_movie_data = db.relationship('UserMovieData', back_populates='movie', lazy="select")
+
 
 class Rating(db.Model):
     __tablename__ = 'ratings'
@@ -54,13 +55,14 @@ class User(db.Model, UserMixin):
 
     ratings = db.relationship('Rating', back_populates='user', lazy="select")
     tags = db.relationship('Tag', back_populates='user', lazy="select")
-    user_movie_data = db.relationship('UserMovieData', back_populates='user', lazy="select")
-    user_lists = db.relationship('UserList', back_populates='user', lazy="select")
-    user_list_items = db.relationship('UserListItems', back_populates='user', lazy="select")
-    user_mapping = db.relationship('UserMapping', back_populates='user', lazy="joined")
+    movie_data = db.relationship('UserMovieData', back_populates='user', lazy="select")
+    lists = db.relationship('UserList', back_populates='user', lazy="select")
+    list_items = db.relationship('UserListItems', back_populates='user', lazy="select")
+    mapping = db.relationship('UserMapping', back_populates='user', lazy="joined")
 
     def get_id(self):
         return str(self.userId)
+    
 class Link(db.Model):
     __tablename__ = 'links'
 
@@ -70,17 +72,23 @@ class Link(db.Model):
 
     movie = db.relationship('Movie', back_populates='links')
 
+    user_list_items = db.relationship('UserListItems', 
+                                      back_populates='link', 
+                                      primaryjoin="UserListItems.movieId == foreign(Link.movieId)",
+                                      overlaps="links,movie")
+
+
 class UserMovieData(db.Model):
     __tablename__ = 'user_movie_data'
 
     userId = db.Column(db.Integer, db.ForeignKey('users.userId'), primary_key=True)
     movieId = db.Column(db.Integer, db.ForeignKey('movies.movieId'), primary_key=True)
     action = db.Column(db.Enum(UserAction), nullable=False, primary_key=True)
-    liked = db.Column(db.Integer)
-    rating = db.Column(db.Integer)
+    liked = db.Column(db.Boolean, nullable=False)
+    rating = db.Column(db.REAL, nullable=False) 
     review = db.Column(db.String(255), nullable=True)
 
-    user = db.relationship('User', back_populates='user_movie_data')
+    user = db.relationship('User', back_populates='movie_data')
     movie = db.relationship('Movie', back_populates='user_movie_data')
     
     __table_args__ = (
@@ -91,28 +99,43 @@ class UserMovieData(db.Model):
 
 class UserList(db.Model):
     __tablename__ = 'user_lists'
-    userId = db.Column(db.Integer, db.ForeignKey('users.userId'), primary_key=True)
-    list_name = db.Column(db.String(100), nullable=False, primary_key=True)
+    listId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userId = db.Column(db.Integer, db.ForeignKey('users.userId'), nullable=False)
+    list_name = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    background_image = db.Column(db.String(255))
 
-    user = db.relationship('User', back_populates='user_lists')
-    items = db.relationship('UserListItems', back_populates='list')
+    user = db.relationship('User', back_populates='lists')
+    items = db.relationship('UserListItems', back_populates='list', cascade="all")
 
 class UserListItems(db.Model):
     __tablename__ = 'user_list_items'
-    userId = db.Column(db.Integer, db.ForeignKey('users.userId'), primary_key=True)
-    movieId = db.Column(db.Integer, db.ForeignKey('movies.movieId'), primary_key=True)
-    list_name = db.Column(db.String(100), db.ForeignKey('user_lists.list_name'), primary_key=True)
+    
+    itemId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    listId = db.Column(db.Integer, db.ForeignKey('user_lists.listId'), nullable=False)
+    movieId = db.Column(db.Integer, db.ForeignKey('movies.movieId'), nullable=False)
+    userId = db.Column(db.Integer, db.ForeignKey('users.userId'), nullable=False)
+    
     timestamp = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
 
+    list= db.relationship('UserList', back_populates='items')
     movie = db.relationship('Movie', back_populates='user_list_items')
-    user = db.relationship('User', back_populates='user_list_items')
-    list = db.relationship('UserList', back_populates='items')
+    user = db.relationship('User', back_populates='list_items')
+
+    link = db.relationship('Link', 
+                           back_populates='user_list_items', 
+                           primaryjoin="UserListItems.movieId == foreign(Link.movieId)", 
+                           lazy="joined",
+                           overlaps="links,movie")
+
+    __table_args__ = (
+        db.UniqueConstraint('listId', 'movieId', name='unique_list_movie'),
+    )
 
 class UserMapping(db.Model):
     __tablename__ = 'user_mapping'
     movielens_userId = db.Column(db.Integer, primary_key=True)
     system_userId = db.Column(db.Integer, db.ForeignKey('users.userId'), unique=True)
 
-    user = db.relationship('User', back_populates='user_mapping')
+    user = db.relationship('User', back_populates='mapping')
 
