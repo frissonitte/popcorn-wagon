@@ -19,6 +19,10 @@ class Movie(db.Model):
     title = db.Column(db.String(100), nullable=False)
     genres = db.Column(db.String(100), nullable=False)
 
+    __table_args__ = (
+        db.Index("idx_movie_title", "title"),
+    )
+
     ratings = db.relationship("Rating", back_populates="movie", lazy="select")
     tags = db.relationship("Tag", back_populates="movie", lazy="select")
     links = db.relationship("Link", back_populates="movie", lazy="select")
@@ -57,6 +61,8 @@ class Tag(db.Model):
     user = db.relationship("User", back_populates="tags")
 
     __table_args__ = (
+        db.Index("idx_tag_user_movie", "userId", "movieId"),
+        db.Index("idx_tag_tag", "tag"),
         db.UniqueConstraint("userId", "movieId", "tag", name="unique_user_movie_tag"),
     )
 
@@ -101,6 +107,12 @@ class UserMovieData(db.Model):
 
     user = db.relationship("User", back_populates="movie_data")
     movie = db.relationship("Movie", back_populates="user_movie_data")
+
+    __table_args__ = (
+        db.Index("idx_user_movie_data_userId", "userId"),
+        db.Index("idx_user_movie_data_movieId", "movieId"),
+        db.Index("idx_user_movie_data_action", "action"),
+    )
 
     __table_args__ = (
         CheckConstraint("rating BETWEEN 1 AND 10", name="rating_check"),

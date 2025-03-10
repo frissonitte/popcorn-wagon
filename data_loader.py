@@ -6,6 +6,7 @@ app = create_app()
 
 def main():
     u.enable_wal_mode()
+    u.load_data()
     u.load_movielens_users()
     u.check_users_and_mappings()
 

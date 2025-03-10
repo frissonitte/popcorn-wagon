@@ -1,18 +1,13 @@
 {% extends "layout.html" %}
 
-{% block title %}List Details{% endblock %}
+{% block title %}Recommendations{% endblock %}
 
 {% block main %}
-    <h2>Movies in List</h2>
-    {% if data %}
-    <form action="{{ url_for('main.recommendator') }}" method="POST" class="list-actions">
-        {% for movie in data %}
-            <input type="hidden" name="movieId" value="{{ movie['id'] }}">
-        {% endfor %}
-        <button type="submit" class="btn btn-success">Get Recommendations</button>
-    </form>
+    <h2>Recommendations</h2>
+    {% if recommended_movies %}
+    <button id="recommend-button">Bu Listeye Göre Öneri Al</button>
     <div class="movie-grid">
-        {% for movie in data %}
+        {% for movie in recommended_movies %}
             <div class="card v4 tight">
                 <div class="wrapper">
                     <div class="image">
@@ -52,51 +47,10 @@
                             <p>{{ movie['overview'][:250] }}...</p>
                         </div>
                     </div>
-                </div>           
+                </div>
             </div>
         {% endfor %}
     </div>
-
-    <div class="pagination">
-        {% if page > 1 %}
-            <a href="{{ url_for('main.list_details', listId=listId, page=page-1) }}">← Previous</a>
-            {% if page > 5 %}
-                <a href="{{ url_for('main.list_details', listId=listId, page=1) }}">1</a>
-            {% endif %}
-        {% endif %}
-        
-        {% if page <= 5 %}
-            {% set start_page = 1 %}
-            {% set end_page = [5, total_pages] | min %}
-        {% else %}
-            {% set start_page = [1, page - 2] | max %}
-            {% set end_page = [total_pages, page + 2] | min %}
-        {% endif %}
-    
-        {% if start_page > 2 %}
-            <span>...</span>
-        {% endif %}
-    
-        {% for p in range(start_page, end_page + 1) %}
-            {% if p == page %}
-                <a href="{{ url_for('main.list_details', listId=listId, page=p) }}" class="active">{{ p }}</a>
-            {% else %}
-                <a href="{{ url_for('main.list_details', listId=listId, page=p) }}">{{ p }}</a>
-            {% endif %}
-        {% endfor %}
-    
-        {% if end_page < total_pages - 1 %}
-            <span>...</span>
-        {% endif %}
-    
-        {% if page < total_pages %}
-            {% if end_page < total_pages %}
-                <a href="{{ url_for('main.list_details', listId=listId, page=total_pages) }}">{{ total_pages }}</a>
-            {% endif %}
-            <a href="{{ url_for('main.list_details', listId=listId, page=page+1) }}">Next →</a>
-        {% endif %}
-    </div>
-    
     {% else %}
     <p>No movies found.</p>
     {% endif %}

@@ -11,3 +11,5 @@ venv/
 .sqlite3
 *.log
 *.in
+x.py
+popcorn.joblib

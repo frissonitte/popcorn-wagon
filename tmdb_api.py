@@ -83,4 +83,15 @@ def get_movie_images(movie_id):
     if posters:
         return posters[0].get("file_path")
 
-    return None
+
+def get_content_recommendations(movie_id):
+    endpoint = f"movie/{movie_id}/recommendations"
+    params = {"api_key": api_key, "language": "en-US"}
+    response_data = fetch_from_tmdb(endpoint, params=params)
+
+    if response_data:
+        content_based_recommendations = [
+            movie['id'] for movie in response_data.get('results', [])
+        ]
+        return content_based_recommendations
+    return []

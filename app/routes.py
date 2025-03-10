@@ -6,6 +6,7 @@ from flask_login import current_user
 import app.models as m
 import tmdb_api as tmdb
 from app.extensions import db
+from app.utils.recommend_utils import get_hybrid_recommendations
 
 main = Blueprint("main", __name__)
 
@@ -87,50 +88,80 @@ def list_details(listId):
     )
 
 
+@main.route("/recommendator", methods=["POST"])
+def recommendator():
+    movieIds = request.form.getlist("movieId", type=int)
+    
+    all_recommendations = []
+    for movieId in movieIds:
+        recommendations = get_hybrid_recommendations(movieId)
+        all_recommendations.extend(recommendations)
+    
+    unique_recommendations = list(set(all_recommendations))
+    print(f"All recommendations: {all_recommendations}")
+    print(f"Unique recommendations: {unique_recommendations}")
+
+    recommended_movies = []
+    for movieId in unique_recommendations[:10]:
+        movie_details = tmdb.get_movie_details(movieId)
+        print(f"Movie details for {movieId}: {movie_details}")
+        if movie_details:
+            recommended_movies.append(movie_details)
+    
+    
+    return render_template("recommendations.html", recommended_movies=recommended_movies)
+
+
 @main.route("/lists")
 def lists():
     lists = m.UserList.query.filter_by(userId=current_user.userId).all()
 
     return render_template("lists.html", lists=lists)
 
-@main.route('/search', methods=['GET', 'POST'])
+
+@main.route("/search", methods=["GET", "POST"])
 def search():
     if request.method == "POST":
         query = request.form.get("query", "").strip()
         if not query:
             flash("Enter a search term.", "danger")
             return redirect("/")
-        return redirect(url_for('main.search', q=query, page=1))
-    
+        return redirect(url_for("main.search", q=query, page=1))
+
     query = request.args.get("q", "").strip()
     page = request.args.get("page", 1, type=int)
-    per_page = 10 
+    per_page = 10
 
     if not query:
         flash("Enter a search term.", "danger")
         return redirect("/")
-    
+
     result = tmdb.search(query, page=page)
-    
-    if not result or 'results' not in result or not result['results']:
-        flash(f"No results found for '{query}'. Please try another search term.", "warning")
+
+    if not result or "results" not in result or not result["results"]:
+        flash(
+            f"No results found for '{query}'. Please try another search term.",
+            "warning",
+        )
         return redirect("/")
-    
-    movies = result['results']
-    total_pages = result.get('total_pages', 1)
-    total_results = result.get('total_results', 0)
+
+    movies = result["results"]
+    total_pages = result.get("total_pages", 1)
+    total_results = result.get("total_results", 0)
 
     if page < 1:
         page = 1
     if page > total_pages:
         page = total_pages
 
-    return render_template("search_results.html", 
-                           movies=movies, 
-                           query=query, 
-                           page=page, 
-                           total_pages=total_pages, 
-                           total_results=total_results)
+    return render_template(
+        "search_results.html",
+        movies=movies,
+        query=query,
+        page=page,
+        total_pages=total_pages,
+        total_results=total_results,
+    )
 
 
 @main.route("/dynamic_search")
