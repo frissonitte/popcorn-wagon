@@ -1,7 +1,7 @@
 # Popcorn Wagon 🍿🎬
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-![Popcorn Wagon Banner](app/static/popcorn-wagon.jpg)
+![Popcorn Wagon Banner](app\static\images\popcorn-wagon.jpg)
 
 ## Table of Contents
 - [About Popcorn Wagon](#about-popcorn-wagon)

@@ -15,7 +15,7 @@ function searchMovies() {
         resultsDiv.innerHTML = "<p class='dropdown-item'>Searching...</p>";
         resultsDiv.style.display = "block";
 
-        fetch(`/search_movies_json?q=${encodeURIComponent(searchTerm)}`)
+        fetch(`/dynamic_search?q=${encodeURIComponent(searchTerm)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.length === 0) {

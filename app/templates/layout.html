@@ -26,6 +26,12 @@
               <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}"><a class="nav-link" href="/register">Register</a>
               <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}"><a class="nav-link" href="/login">Log In</a>
             {% endif %}
+            <form action="{{ url_for('main.search') }}" method="POST" class="d-flex justify-content-center w-100">
+              <div class="d-flex justify-content-center align-items-center w-50">
+                  <input type="text" class="form-control" placeholder="Search" id="navbar-search" name="query">
+                  <button class="btn btn-outline-success ms-2" type="submit">Search</button>
+              </div>
+          </form>
         </div>
       </div>
     </div>

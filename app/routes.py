@@ -93,9 +93,48 @@ def lists():
 
     return render_template("lists.html", lists=lists)
 
+@main.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == "POST":
+        query = request.form.get("query", "").strip()
+        if not query:
+            flash("Enter a search term.", "danger")
+            return redirect("/")
+        return redirect(url_for('main.search', q=query, page=1))
+    
+    query = request.args.get("q", "").strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10 
 
-@main.route("/search_movies_json")
-def search_movies_json():
+    if not query:
+        flash("Enter a search term.", "danger")
+        return redirect("/")
+    
+    result = tmdb.search(query, page=page)
+    
+    if not result or 'results' not in result or not result['results']:
+        flash(f"No results found for '{query}'. Please try another search term.", "warning")
+        return redirect("/")
+    
+    movies = result['results']
+    total_pages = result.get('total_pages', 1)
+    total_results = result.get('total_results', 0)
+
+    if page < 1:
+        page = 1
+    if page > total_pages:
+        page = total_pages
+
+    return render_template("search_results.html", 
+                           movies=movies, 
+                           query=query, 
+                           page=page, 
+                           total_pages=total_pages, 
+                           total_results=total_results)
+
+
+@main.route("/dynamic_search")
+def dynamic_search():
     query = request.args.get("q", "").strip()
     if not query:
         return jsonify([])
