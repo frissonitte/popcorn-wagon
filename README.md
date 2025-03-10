@@ -66,15 +66,18 @@ popcorn-wagon/
 │   ├── data/                  # Folder for dataset files
 │   │   └── *.csv              # MovieLens .csv files
 │   ├── static/                # Static files (CSS, JS, images)
+│   ├── utils/                 # Functions
 │   ├── templates/             # HTML templates
 │   ├── __init__.py            # Flask app initialization
 │   ├── routes.py              # Flask routes
+│   ├── auth.py                # Authorization routes
 │   ├── extensions.py          # Stores app's extensions
 │   └── models.py              # Database models
-├── instance/                  # Our database will be here
+├── instance/                  # Our database will be inside this
 ├── migrations/                # Handles SQLAlchemy database migrations
-├── venv/                      # Virtual environment
+├── venv/                      # Virtual environment (You need to create it first.)
 ├── .env                       # Stores sensitive information.(You need to create your own)
+├── .gitignore                 # Untracked files
 ├── data_loader.py             # Script to initialize the database
 ├── app.py                     # Stores the flask app
 ├── run.py                     # Application start point

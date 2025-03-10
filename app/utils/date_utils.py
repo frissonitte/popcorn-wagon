@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from flask import Flask
+
 
 def format_date(date_input, format="%b %d %Y"):
     if isinstance(date_input, datetime):
@@ -10,6 +12,8 @@ def format_date(date_input, format="%b %d %Y"):
             return date_obj.strftime(format)
         except ValueError:
             return date_input
-    return date_input or "Unknown Date" 
+    return date_input or "Unknown Date"
+
+
 def register_filters(app: Flask):
-    app.jinja_env.filters['format_date'] = format_date
+    app.jinja_env.filters["format_date"] = format_date

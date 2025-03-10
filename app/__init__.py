@@ -1,7 +1,9 @@
 from flask import Flask
-from config import Config
-from app.extensions import db, migrate,login_manager
+
 import app.models
+from app.extensions import db, login_manager, migrate
+from config import Config
+
 from .utils.date_utils import register_filters
 
 
@@ -15,9 +17,11 @@ def create_app():
     login_manager.init_app(app)
 
     from app.routes import init_routes
+
     init_routes(app)
-    
+
     from app.auth import auth
+
     app.register_blueprint(auth)
 
     return app

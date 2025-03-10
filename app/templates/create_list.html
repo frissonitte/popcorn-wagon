@@ -19,12 +19,13 @@
     <div id="searchResults" class="dropdown-content"></div>
     
     <div id="backgroundOptions">
-        {% set placeholder_url = url_for('static', filename='css/No-Image-Placeholder.svg') %}
+        {% set placeholder_url = url_for('static', filename='images/No-Image-Placeholder.svg') %}
         {% for movie in movies %}
-        <div class="background-option" data-poster-url="{{ movie.poster_url if movie.poster_url else placeholder_url }}">
-            <img src="{{ movie.poster_url if movie.poster_url else placeholder_url }}" alt="{{ movie.title }}" class="background-poster">
+        {% set backdrop_url = movie.backdrop_url if movie.backdrop_url else (movie.poster_url if movie.poster_url else placeholder_url) %}
+        <div class="background-option" data-backdrop-url="{{ backdrop_url }}">
+            <img src="{{ backdrop_url }}" alt="{{ movie.title }}" class="background-poster">
             <div class="selected-overlay">Selected</div>
-            <button type="button" onclick="selectBackground('{{ movie.poster_url if movie.poster_url else placeholder_url }}')">Select as Background</button>
+            <button type="button" onclick="selectBackground('{{ backdrop_url }}')">Select as Background</button>
         </div>
         {% endfor %}
     </div>
@@ -32,3 +33,5 @@
     <button type="submit">Create List</button>
 </form>
 {% endblock %}
+
+

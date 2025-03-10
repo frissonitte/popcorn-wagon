@@ -7,18 +7,18 @@ function updateBackgroundOptions() {
             return {
                 id: li.dataset.movieId,
                 title: li.textContent.split("❌")[0].trim(), 
-                poster_url: li.dataset.posterUrl || "{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
+                backdrop_url: li.dataset.backdropUrl || li.dataset.posterUrl || "{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
             };
         });
 
     selectedMovies.forEach(movie => {
         let option = document.createElement("div");
         option.classList.add("background-option");
-        option.dataset.posterUrl = movie.poster_url;
+        option.dataset.posterUrl = movie.backdrop_url;
         option.innerHTML = `
-            <img src="${movie.poster_url}" alt="${movie.title}" class="background-poster">
+            <img src="${movie.backdrop_url}" alt="${movie.title}" class="background-poster">
             <div class="selected-overlay">Selected</div>
-            <button type="button" onclick="selectBackground('${movie.poster_url}')">Select as Background</button>
+            <button type="button" onclick="selectBackground('${movie.backdrop_url}')">Select as Background</button>
         `;
         backgroundOptions.appendChild(option);
     });
