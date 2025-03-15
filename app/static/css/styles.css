@@ -106,9 +106,7 @@ h2 {
 
 /* List Actions */
 .list-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    max-width: 200px
 }
 
 .list-actions .btn {
@@ -579,4 +577,24 @@ form {
     .card.v4.tight .poster-image {
         height: 120px;
     }
+}
+
+#like-icon, #dislike-icon {
+    color: grey; 
+    cursor: pointer;
+}
+
+#like-icon.active-like {
+    color: green;
+}
+
+#dislike-icon.active-dislike {
+    color: red;
+}
+
+.like-dislike {
+    font-size: 50px;
+    cursor: pointer;
+
+    gap: 20px;
 }

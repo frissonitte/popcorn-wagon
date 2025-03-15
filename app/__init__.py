@@ -1,11 +1,9 @@
 from flask import Flask
-
-import app.models
+from flask_executor import Executor
 from app.extensions import db, login_manager, migrate
 from config import Config
-
 from .utils.date_utils import register_filters
-
+from app.utils.recommend_utils import init_executor
 
 def create_app():
     app = Flask(__name__)
@@ -16,12 +14,17 @@ def create_app():
     register_filters(app)
     login_manager.init_app(app)
 
-    from app.routes import init_routes
+    executor = Executor(app)
+    init_executor(app)
 
+    from app.routes import init_routes
     init_routes(app)
 
     from app.auth import auth
-
     app.register_blueprint(auth)
+
+    with app.app_context():
+        from app.utils.recommend_utils import load_movie_mappings
+        load_movie_mappings()
 
     return app

@@ -1,106 +1,138 @@
-from app.extensions import db
-from app.models import Movie, Link, Rating
-from scipy.sparse import csr_matrix
-from sklearn.neighbors import NearestNeighbors
+from flask import current_app
+from flask_executor import Executor
+import time
+import json
+import logging
 import pandas as pd
-import joblib
+from annoy import AnnoyIndex
+from app.extensions import db
+from app.models import Movie, Link, Rating  
 
-global_ratings_df = None
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-def load_ratings():
-    global global_ratings_df
-    if global_ratings_df is None:
-        print("📊 **Step 3:** Fetching rating data...")
-        ratings = db.session.query(Rating.userId, Rating.movieId, Rating.rating).all()
-        if not ratings:
-            print("❌ No sufficient rating data found in the database.")
-            return None
-        print(f"✅ Retrieved {len(ratings)} ratings.")
-        global_ratings_df = pd.DataFrame(ratings, columns=["userId", "movieId", "rating"])
-    return global_ratings_df
+_cached_ratings = None
+_last_updated = 0
+_movie_lens_to_tmdb = {}
+_tmdb_to_movie_lens = {}
+
+executor = None
+
+def init_executor(app):
+    global executor
+    executor = Executor(app)
+
+def load_movie_mappings():
+    global _movie_lens_to_tmdb, _tmdb_to_movie_lens
+    logging.info("🔄 Loading movie mappings...")
+    with db.session() as session:
+        mappings = session.query(Movie.movieId, Link.tmdbId).join(Link).all()
+        _movie_lens_to_tmdb = {str(m.movieId): str(m.tmdbId) for m in mappings}
+        _tmdb_to_movie_lens = {str(m.tmdbId): str(m.movieId) for m in mappings}
+
+def get_movie_lens_id(tmdb_id):
+    return _tmdb_to_movie_lens.get(str(tmdb_id))
+
+def get_tmdb_id(movie_lens_id):
+    return _movie_lens_to_tmdb.get(str(movie_lens_id))
+
+def load_ratings(force_reload=False):
+    global _cached_ratings, _last_updated
+    with current_app.app_context():
+        if _cached_ratings is not None and (time.time() - _last_updated) < 600:
+            return _cached_ratings
+
+        logging.info("📊 Fetching rating data from DB...")
+        query = db.session.query(Rating.userId, Rating.movieId, Rating.rating)
+
+        ratings_df = pd.read_sql_query(query.statement, db.engine)
+
+        _cached_ratings = ratings_df
+        _last_updated = time.time()
+        return _cached_ratings
+    
+def get_model():
+    try:
+        with open("popcorn_config.json", "r") as f_in:
+            config = json.load(f_in)
+            f = config["dimension"]
+    except (FileNotFoundError, KeyError):
+        logging.error("❌ Model config file not found. Please retrain the model!")
+        return None
+
+    annoy_index = AnnoyIndex(f, 'angular')
+    annoy_index.load("popcorn.ann")
+    return annoy_index
 
 def get_collaborative_recommendations(tmdb_id, num_recommendations=5):
-    """
-    Convert TMDB ID to MovieLens ID, apply collaborative filtering, and return recommendations as TMDB IDs.
-    """
-    print(f"\n🔍 **Step 1:** Finding MovieLens ID for TMDB ID {tmdb_id}...")
+    with current_app.app_context():
+        start_time = time.time()
 
-    movie = db.session.query(Movie).join(Link).filter(Link.tmdbId == str(tmdb_id)).first()
-    
-    if not movie:
-        print(f"❌ No matching MovieLens ID found for TMDB ID {tmdb_id}.")
-        return []
+        movieId = get_movie_lens_id(tmdb_id)
+        if movieId is None:
+            logging.warning(f"❌ No matching MovieLens ID for TMDB ID {tmdb_id}.")
+            return []
 
-    movieId = movie.movieId  
-    print(f"✅ Matching MovieLens ID: {movieId}\n") 
+        logging.info(f"✅ Matching MovieLens ID: {movieId}")
+        ratings_df = load_ratings()  
+        if ratings_df is None:
+            return []
 
-    ratings_df = load_ratings()
-    if ratings_df is None:
-        return []
+        user_movie_matrix = ratings_df.pivot_table(index="movieId", columns="userId", values="rating", fill_value=0)
+        movie_ids = set(user_movie_matrix.index.tolist())
 
-    print("\n📈 **Step 5:** Creating user-movie matrix...")
-    user_movie_matrix = ratings_df.pivot_table(index="userId", columns="movieId", values="rating", fill_value=0)
-    print(f"✅ Matrix size: {user_movie_matrix.shape}")
+        if movieId not in movie_ids:
+            logging.warning(f"❌ Movie ID {movieId} not found in matrix.")
+            return []
 
-    movie_ids = list(map(str, user_movie_matrix.columns.tolist()))
+        model = get_model()
+        if model is None:
+            return []
 
-    if str(movieId) not in movie_ids:
-        print(f"❌ Movie ID {movieId} not found in the recommendation matrix.")
-        return []
+        movie_vector = user_movie_matrix.loc[movieId].values.astype(float).tolist()
+        indices = model.get_nns_by_vector(movie_vector, num_recommendations + 1)  
 
-    print("\n🧩 **Step 7:** Creating sparse matrix...")
-    user_movie_matrix_sparse = csr_matrix(user_movie_matrix.values.T) 
+        recommended_movie_ids = [idx for idx in indices if idx != movieId]
+        recommended_tmdb_ids = [get_tmdb_id(mid) for mid in recommended_movie_ids if get_tmdb_id(mid)]
 
+        elapsed_time = time.time() - start_time
+        logging.info(f"🎬 Recommended TMDB IDs: {recommended_tmdb_ids}")
+        logging.info(f"⏳ Collaborative filtering işlem süresi: {elapsed_time:.2f} saniye")
+
+        return recommended_tmdb_ids[:num_recommendations]
+
+def async_get_collaborative_recommendations(tmdb_id, num_recommendations=5):
+    app = current_app._get_current_object()
+    def task():
+        with app.app_context():
+            return get_collaborative_recommendations(tmdb_id, num_recommendations)
+
+    future = executor.submit(task)
     try:
-        model = joblib.load('popcorn.joblib')
-        print("✅ Model loaded successfully.")
-    except (FileNotFoundError, Exception) as e:
-        print(f"❌ Failed to load model: {e}")
-        print("🔄 Training a new model...")
-        model = NearestNeighbors(metric="cosine", algorithm="brute")
-        model.fit(user_movie_matrix_sparse) 
-        joblib.dump(model, 'popcorn.joblib')
-        print("✅ New model saved.")
+        return future.result(timeout=10)
+    except Exception as e:
+        logging.error(f"⚠️ Async collaborative filtering failed: {e}")
+        return []
 
-    print("\n🔍 **Step 9:** Finding nearest movies...")
-    distances, indices = model.kneighbors(
-        user_movie_matrix_sparse[movie_ids.index(str(movieId))].reshape(1, -1),
-        n_neighbors=num_recommendations + 1 
-    )
-
-    recommended_movie_ids = [movie_ids[i] for i in indices.flatten()]
-    recommended_movie_ids = [id for id in recommended_movie_ids if id != str(movieId)]
-    print(f"🎬 **Step 10:** MovieLens recommendations: {recommended_movie_ids}")
-
-    print("\n🔄 **Step 11:** Converting MovieLens IDs to TMDB IDs...")
-    recommended_tmdb_ids = (
-        db.session.query(Link.tmdbId)
-        .join(Movie)
-        .filter(Movie.movieId.in_(recommended_movie_ids))
-        .all()
-    )
-
-    recommended_tmdb_ids = [str(tmdbId[0]) for tmdbId in recommended_tmdb_ids]
-    print(f"✅ TMDB IDs: {recommended_tmdb_ids}\n")
-
-    return recommended_tmdb_ids[:num_recommendations]
 
 
 from tmdb_api import get_content_recommendations
 
 def get_hybrid_recommendations(movieId, num_recommendations=10):
-    content_based = get_content_recommendations(movieId)
-    print(f"Content-based recommendations for movie {movieId}: {content_based}")
+    with current_app.app_context():
+        start_time = time.time()
 
-    collaborative_based = get_collaborative_recommendations(movieId, num_recommendations)
-    print(f"Collaborative recommendations for movie {movieId}: {collaborative_based}")
+        content_future = executor.submit(get_content_recommendations, movieId)
+        collaborative_future = executor.submit(get_collaborative_recommendations, movieId, num_recommendations)
+        
+        content_based = content_future.result()
+        collaborative_based = collaborative_future.result()
 
-    if isinstance(content_based, list):
-        content_ids = list(map(str, content_based[:5]))
-    else:
-        content_ids = []
-    
-    hybrid_list = list(set(content_ids + collaborative_based))
-    print(f"Hybrid recommendations: {hybrid_list}")
-    
-    return hybrid_list[:num_recommendations]
+        content_ids = list(map(str, content_based[:5])) if isinstance(content_based, list) else []
+        hybrid_list = list(set(content_ids + collaborative_based))
+        
+        elapsed_time = time.time() - start_time
+        logging.info(f"Hybrid recommendations: {hybrid_list}")
+        logging.info(f"⏳ Hybrid filtering işlem süresi: {elapsed_time:.2f} saniye")
+        
+        return hybrid_list[:num_recommendations]
+

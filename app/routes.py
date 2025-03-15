@@ -7,6 +7,7 @@ import app.models as m
 import tmdb_api as tmdb
 from app.extensions import db
 from app.utils.recommend_utils import get_hybrid_recommendations
+import logging
 
 main = Blueprint("main", __name__)
 
@@ -108,8 +109,7 @@ def recommendator():
         if movie_details:
             recommended_movies.append(movie_details)
     
-    
-    return render_template("recommendations.html", recommended_movies=recommended_movies)
+    return render_template("recommendations.html", recommended_movies=recommended_movies)   
 
 
 @main.route("/lists")
@@ -282,6 +282,74 @@ def create_list():
 
     movies = []
     return render_template("create_list.html", movies=movies)
+
+@main.route("/add_to_list", methods=["POST"])
+def add_to_list():
+    movieId = request.form.get("movieId")
+    listId = request.form.get("listId")
+
+    if not movieId or not listId:
+        flash("Invalid request.", "danger")
+        return redirect(url_for("main.index"))
+
+    user_list = m.UserList.query.get(listId)
+    if not user_list:
+        flash("List not found!", "danger")
+        return redirect(url_for("main.index"))
+
+    logging.info(f"Existing movie IDs in list: {[item.movieId for item in user_list.items]}")
+    logging.info(f"Trying to add movieId: {movieId}")
+    logging.info(f"Type of user_list.items: {type(user_list.items)}")
+
+    if any(item.movieId == int(movieId) for item in user_list.items):
+        flash("This movie is already in the list!", "warning")
+    else:
+        new_item = m.UserListItems(listId=listId, movieId=movieId, userId=current_user.userId)
+        db.session.add(new_item)
+        db.session.commit()
+        flash(f"Movie added to {user_list.list_name} successfully!", "success")
+
+    return redirect(url_for("main.movie_details", movieId=movieId))
+
+@main.route("/add_to_liked", methods=["POST"])
+def add_to_liked():
+    movieId = request.form.get("movieId")
+    action = request.form.get("action")
+
+    if not movieId or not action:
+        flash("Invalid request. Action is required.", "danger")
+        return redirect(url_for("main.index"))
+
+    user_data = m.UserMovieData.query.filter_by(userId=current_user.userId, movieId=movieId).first()
+
+    if action == "LIKE":
+        new_value = 1
+    elif action == "DISLIKE":
+        new_value = -1
+    else:
+        flash("Invalid action.", "danger")
+        return redirect(url_for("main.index"))
+
+    if user_data:
+        if user_data.liked == new_value:
+            user_data.liked = None 
+            flash("Your preference has been removed.", "info")
+        else:
+            user_data.liked = new_value
+            flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
+        db.session.commit()
+    else:
+        new_data = m.UserMovieData(
+            userId=current_user.userId,
+            movieId=movieId,
+            action=m.UserAction.RATED,
+            liked=new_value
+        )
+        db.session.add(new_data)
+        db.session.commit()
+        flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
+
+    return redirect(url_for("main.movie_details", movieId=movieId))
 
 
 def init_routes(app):

@@ -1,16 +1,7 @@
-from enum import Enum
-
+from sqlalchemy.orm import relationship
 from flask_login import UserMixin
-from sqlalchemy import CheckConstraint, UniqueConstraint
-
+from sqlalchemy import Integer, ForeignKey, REAL,Index, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
 from app.extensions import db
-
-
-class UserAction(Enum):
-    RATED = "rated"
-    REVIEWED = "reviewed"
-    WATCHED = "watched"
-
 
 class Movie(db.Model):
     __tablename__ = "movies"
@@ -98,28 +89,23 @@ class Link(db.Model):
 class UserMovieData(db.Model):
     __tablename__ = "user_movie_data"
 
-    userId = db.Column(db.Integer, db.ForeignKey("users.userId"), primary_key=True)
-    movieId = db.Column(db.Integer, db.ForeignKey("movies.movieId"), primary_key=True)
-    action = db.Column(db.Enum(UserAction), nullable=False, primary_key=True)
-    liked = db.Column(db.Boolean, nullable=False)
-    rating = db.Column(db.REAL, nullable=False)
-    review = db.Column(db.String(255), nullable=True)
-
-    user = db.relationship("User", back_populates="movie_data")
-    movie = db.relationship("Movie", back_populates="user_movie_data")
-
-    __table_args__ = (
-        db.Index("idx_user_movie_data_userId", "userId"),
-        db.Index("idx_user_movie_data_movieId", "movieId"),
-        db.Index("idx_user_movie_data_action", "action"),
-    )
+    userId = db.Column(Integer, ForeignKey("users.userId"), primary_key=True)
+    movieId = db.Column(Integer, ForeignKey("movies.movieId"), primary_key=True)
+    
+    liked = db.Column(Integer, nullable=True)
+    rating = db.Column(REAL, nullable=True)
+    tagId = db.Column(Integer, ForeignKey("tags.id"), nullable=True)
+    
+    tag = relationship('Tag', backref='user_movie_data', lazy=True)
+    user = relationship("User", back_populates="movie_data")
+    movie = relationship("Movie", back_populates="user_movie_data")
 
     __table_args__ = (
+        Index("idx_user_movie_data_userId", "userId"),
+        Index("idx_user_movie_data_movieId", "movieId"),
         CheckConstraint("rating BETWEEN 1 AND 10", name="rating_check"),
-        CheckConstraint("liked IN (-1, 0, 1)", name="liked_check"),
-        db.PrimaryKeyConstraint(
-            "userId", "movieId", "action", name="primary_key_constraint"
-        ),
+        CheckConstraint("liked IN (-1, 1)", name="liked_check"),
+        PrimaryKeyConstraint("userId", "movieId", name="primary_key_constraint"),
     )
 
 

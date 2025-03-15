@@ -12,4 +12,5 @@ venv/
 *.log
 *.in
 x.py
-popcorn.joblib
+*.ann
+*.json
