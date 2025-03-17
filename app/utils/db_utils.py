@@ -84,6 +84,7 @@ def load_csv_and_insert(model, file_path, sep=",", chunk_size=100000):
                     chunk = chunk.drop_duplicates(subset=["userId", "movieId", "tag"])
                 batch_insert(model, chunk.to_dict(orient="records"))
                 pbar.update(len(chunk))
+
     except Exception as e:
         logging.error(f"Error loading CSV file {file_path}: {e}")
         raise
@@ -157,11 +158,12 @@ def check_users_and_mappings():
 def load_data():
     try:
         disable_foreign_keys()
-        load_csv_and_insert(mod.Movie, f"{Config.CSV_PATH}/movies.csv")
+        load_csv_and_insert(mod.Movie, f"{Config.CSV_PATH}/links.csv")
         load_csv_and_insert(mod.Rating, f"{Config.CSV_PATH}/ratings.csv")
-        load_csv_and_insert(mod.Link, f"{Config.CSV_PATH}/links.csv")
+        load_csv_and_insert(mod.Tag, f"{Config.CSV_PATH}/tags.csv")
         enable_foreign_keys()
         logging.info("Data upload completed")
+
     except Exception as e:
         logging.error(f"An error occurred: {e}")
         db.session.rollback()

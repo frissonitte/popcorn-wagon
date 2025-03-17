@@ -25,31 +25,47 @@
 
 <a href="https://www.themoviedb.org/movie/{{ movie['id'] }}" target="_blank">View on TMDb</a>
 
-<form action="{{ url_for('main.add_to_list') }}" method="POST" class="list-actions">
-    <input type="hidden" name="movieId" value="{{ movie['id'] }}">
-    <select name="listId" id="listSelect" required>
-        <option value="" disabled selected hidden>-- Select a list --</option>
-        {% for user_list in current_user.lists %}
-        <option value="{{ user_list.listId }}">{{ user_list.list_name }}</option>
-        {% endfor %}
-    </select>
-    
-    <button id="addButton" class="btn btn-success" type="submit" disabled>Add to List</button>
-</form>
+    {% if current_user.is_authenticated %}
+    <form action="{{ url_for('main.add_to_list') }}" method="POST" class="list-actions">
+        <input type="hidden" name="movieId" value="{{ movie['id'] }}">
+        <select name="listId" id="listSelect" required>
+            <option value="" disabled selected hidden>-- Select a list --</option>
+            {% for user_list in current_user.lists %}
+            <option value="{{ user_list.listId }}">{{ user_list.list_name }}</option>
+            {% endfor %}
+        </select>
+        
+        <button id="addButton" class="btn btn-success" type="submit" disabled>Add to List</button>
+    </form>
 
+    <div class="like-dislike">
+        <i id="like-icon" class="fa fa-thumbs-up {% if user_movie_data and user_movie_data.liked == 1 %}active-like{% endif %}" 
+        onclick="toggleLikeDislike('LIKE')"></i>
 
+        <i id="dislike-icon" class="fa fa-thumbs-down {% if user_movie_data and user_movie_data.liked == -1 %}active-dislike{% endif %}" 
+        onclick="toggleLikeDislike('DISLIKE')"></i>
+    </div>
 
-<div class="like-dislike">
-    <i id="like-icon" class="fa fa-thumbs-up {% if user_movie_data and user_movie_data.liked == 1 %}active-like{% endif %}" 
-       onclick="toggleLikeDislike('LIKE')"></i>
+    <form action="{{ url_for('main.add_to_tags') }}" method="POST">
+        <input type="hidden" class="form-control" id="movieId" name="movieId" value="{{ movie.id }}" required>
+        
+        <div class="mb-3">
+            <label for="tag" class="form-label">Tag:</label>
+            <input type="text" class="form-control" id="tag" name="tag" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Add Tag</button>
+    </form>
 
-    <i id="dislike-icon" class="fa fa-thumbs-down {% if user_movie_data and user_movie_data.liked == -1 %}active-dislike{% endif %}" 
-       onclick="toggleLikeDislike('DISLIKE')"></i>
-</div>
-
-
+    <section class="tags">
+        <h4><bdi>Tags</bdi></h4>
+        <ul>
+            {% for tag in movie_tags %}
+                <li><a class="rounded" href="/search?q={{tag.tag}}&page=1">{{ tag.tag }}</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
 {% endblock %}
-
-
 
 

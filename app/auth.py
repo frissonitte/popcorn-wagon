@@ -42,7 +42,7 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        password_confirmation = request.form.get("password_confirmation")
+        password_confirmation = request.form.get("confirm")
 
         if not username or not password or not password_confirmation:
             flash("Please fill in all fields", "danger")

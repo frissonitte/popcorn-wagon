@@ -91,7 +91,7 @@ def get_content_recommendations(movie_id):
 
     if response_data:
         content_based_recommendations = [
-            movie['id'] for movie in response_data.get('results', [])
+            movie["id"] for movie in response_data.get("results", [])
         ]
         return content_based_recommendations
     return []

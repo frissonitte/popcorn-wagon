@@ -11,6 +11,5 @@ venv/
 .sqlite3
 *.log
 *.in
-x.py
 *.ann
 *.json

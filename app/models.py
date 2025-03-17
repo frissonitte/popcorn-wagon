@@ -1,22 +1,29 @@
-from sqlalchemy.orm import relationship
 from flask_login import UserMixin
-from sqlalchemy import Integer, ForeignKey, REAL,Index, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy import (
+    REAL,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    Integer,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import relationship
+
 from app.extensions import db
+
 
 class Movie(db.Model):
     __tablename__ = "movies"
 
     movieId = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    genres = db.Column(db.String(100), nullable=False)
+    tmdbId = db.Column(db.Integer, nullable=True)
+    imdbId = db.Column(db.Integer, nullable=True)
 
-    __table_args__ = (
-        db.Index("idx_movie_title", "title"),
-    )
+    __table_args__ = (db.Index("idx_movie_movieId", "movieId"),)
 
     ratings = db.relationship("Rating", back_populates="movie", lazy="select")
     tags = db.relationship("Tag", back_populates="movie", lazy="select")
-    links = db.relationship("Link", back_populates="movie", lazy="select")
     user_list_items = db.relationship(
         "UserListItems", back_populates="movie", lazy="select"
     )
@@ -76,27 +83,17 @@ class User(db.Model, UserMixin):
         return str(self.userId)
 
 
-class Link(db.Model):
-    __tablename__ = "links"
-
-    movieId = db.Column(db.Integer, db.ForeignKey("movies.movieId"), primary_key=True)
-    imdbId = db.Column(db.Integer, nullable=True)
-    tmdbId = db.Column(db.Integer, nullable=True)
-
-    movie = db.relationship("Movie", back_populates="links")
-
-
 class UserMovieData(db.Model):
     __tablename__ = "user_movie_data"
 
     userId = db.Column(Integer, ForeignKey("users.userId"), primary_key=True)
     movieId = db.Column(Integer, ForeignKey("movies.movieId"), primary_key=True)
-    
+
     liked = db.Column(Integer, nullable=True)
     rating = db.Column(REAL, nullable=True)
     tagId = db.Column(Integer, ForeignKey("tags.id"), nullable=True)
-    
-    tag = relationship('Tag', backref='user_movie_data', lazy=True)
+
+    tag = relationship("Tag", backref="user_movie_data", lazy=True)
     user = relationship("User", back_populates="movie_data")
     movie = relationship("Movie", back_populates="user_movie_data")
 

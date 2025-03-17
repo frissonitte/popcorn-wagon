@@ -1,3 +1,5 @@
+import logging
+import time
 from math import ceil
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
@@ -7,7 +9,6 @@ import app.models as m
 import tmdb_api as tmdb
 from app.extensions import db
 from app.utils.recommend_utils import get_hybrid_recommendations
-import logging
 
 main = Blueprint("main", __name__)
 
@@ -34,8 +35,9 @@ def index():
 @main.route("/movie/<int:movieId>")
 def movie_details(movieId):
     movie = tmdb.get_movie_details(movieId)
+    movie_tags = m.Tag.query.filter_by(movieId=movieId).all()
     if movie:
-        return render_template("movie_details.html", movie=movie)
+        return render_template("movie_details.html", movie=movie, movie_tags=movie_tags)
     else:
         flash("Movie details not found.", "danger")
         return redirect(url_for("main.index"))
@@ -92,12 +94,12 @@ def list_details(listId):
 @main.route("/recommendator", methods=["POST"])
 def recommendator():
     movieIds = request.form.getlist("movieId", type=int)
-    
+
     all_recommendations = []
     for movieId in movieIds:
         recommendations = get_hybrid_recommendations(movieId)
         all_recommendations.extend(recommendations)
-    
+
     unique_recommendations = list(set(all_recommendations))
     print(f"All recommendations: {all_recommendations}")
     print(f"Unique recommendations: {unique_recommendations}")
@@ -108,8 +110,10 @@ def recommendator():
         print(f"Movie details for {movieId}: {movie_details}")
         if movie_details:
             recommended_movies.append(movie_details)
-    
-    return render_template("recommendations.html", recommended_movies=recommended_movies)   
+
+    return render_template(
+        "recommendations.html", recommended_movies=recommended_movies
+    )
 
 
 @main.route("/lists")
@@ -283,6 +287,7 @@ def create_list():
     movies = []
     return render_template("create_list.html", movies=movies)
 
+
 @main.route("/add_to_list", methods=["POST"])
 def add_to_list():
     movieId = request.form.get("movieId")
@@ -297,19 +302,24 @@ def add_to_list():
         flash("List not found!", "danger")
         return redirect(url_for("main.index"))
 
-    logging.info(f"Existing movie IDs in list: {[item.movieId for item in user_list.items]}")
+    logging.info(
+        f"Existing movie IDs in list: {[item.movieId for item in user_list.items]}"
+    )
     logging.info(f"Trying to add movieId: {movieId}")
     logging.info(f"Type of user_list.items: {type(user_list.items)}")
 
     if any(item.movieId == int(movieId) for item in user_list.items):
         flash("This movie is already in the list!", "warning")
     else:
-        new_item = m.UserListItems(listId=listId, movieId=movieId, userId=current_user.userId)
+        new_item = m.UserListItems(
+            listId=listId, movieId=movieId, userId=current_user.userId
+        )
         db.session.add(new_item)
         db.session.commit()
         flash(f"Movie added to {user_list.list_name} successfully!", "success")
 
     return redirect(url_for("main.movie_details", movieId=movieId))
+
 
 @main.route("/add_to_liked", methods=["POST"])
 def add_to_liked():
@@ -320,7 +330,9 @@ def add_to_liked():
         flash("Invalid request. Action is required.", "danger")
         return redirect(url_for("main.index"))
 
-    user_data = m.UserMovieData.query.filter_by(userId=current_user.userId, movieId=movieId).first()
+    user_data = m.UserMovieData.query.filter_by(
+        userId=current_user.userId, movieId=movieId
+    ).first()
 
     if action == "LIKE":
         new_value = 1
@@ -332,24 +344,73 @@ def add_to_liked():
 
     if user_data:
         if user_data.liked == new_value:
-            user_data.liked = None 
+            user_data.liked = None
             flash("Your preference has been removed.", "info")
         else:
             user_data.liked = new_value
-            flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
+            flash(
+                f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!",
+                "success",
+            )
         db.session.commit()
     else:
         new_data = m.UserMovieData(
             userId=current_user.userId,
             movieId=movieId,
             action=m.UserAction.RATED,
-            liked=new_value
+            liked=new_value,
         )
         db.session.add(new_data)
         db.session.commit()
-        flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
+        flash(
+            f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!",
+            "success",
+        )
 
     return redirect(url_for("main.movie_details", movieId=movieId))
+
+
+@main.route("/add_to_tags", methods=["POST"])
+def add_to_tags():
+    movieId = request.form.get("movieId")
+    tag_text = request.form.get("tag")
+
+    if not tag_text:
+        flash("You need to enter a tag", "info")
+        return redirect(request.referrer)
+
+    existing_tag = m.Tag.query.filter_by(
+        userId=current_user.userId, movieId=movieId, tag=tag_text
+    ).first()
+
+    if existing_tag:
+        flash("You have already added this tag to this movie!", "warning")
+        return redirect(request.referrer)
+
+    new_tag = m.Tag(
+        userId=current_user.userId,
+        movieId=movieId,
+        tag=tag_text,
+        timestamp=int(time.time()),
+    )
+    db.session.add(new_tag)
+    db.session.commit()
+
+    user_movie_data = m.UserMovieData.query.filter_by(
+        userId=current_user.userId, movieId=movieId
+    ).first()
+
+    if not user_movie_data:
+        user_movie_data = m.UserMovieData(
+            userId=current_user.userId, movieId=movieId, tagId=new_tag.id
+        )
+        db.session.add(user_movie_data)
+    else:
+        user_movie_data.tagId = new_tag.id
+
+    db.session.commit()
+    flash("Tag successfully added!", "success")
+    return redirect(request.referrer)
 
 
 def init_routes(app):
