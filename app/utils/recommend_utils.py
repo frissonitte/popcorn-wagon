@@ -1,16 +1,17 @@
 import json
 import logging
 import time
+
 import dask.dataframe as dd
+import pandas as pd
 from annoy import AnnoyIndex
 from dask.diagnostics import ProgressBar
 from flask import current_app
 from flask_executor import Executor
 from scipy.sparse import csr_matrix
-from app.models import Rating
-import pandas as pd
 
 from app.extensions import db
+from app.models import Rating
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -36,21 +37,24 @@ def get_movie_lens_id(tmdb_id):
 def get_tmdb_id(movie_lens_id):
     return _movie_lens_to_tmdb.get(str(movie_lens_id))
 
+
 def load_ratings(force_reload=False):
     global _cached_ratings, _last_updated
 
-    if not force_reload and _cached_ratings is not None and (time.time() - _last_updated) < 600:
+    if (
+        not force_reload
+        and _cached_ratings is not None
+        and (time.time() - _last_updated) < 600
+    ):
         logging.info("📊 Using cached ratings data...")
         return _cached_ratings
 
     logging.info("📊 Fetching rating data from DB using Dask...")
 
-
     query = "SELECT userId, movieId, rating FROM ratings"
     ratings_df = pd.read_sql(query, con=db.engine)
 
     ratings_df = dd.from_pandas(ratings_df, npartitions=10)
-
 
     ratings_df["userId"] = ratings_df["userId"].astype("int32")
     ratings_df["movieId"] = ratings_df["movieId"].astype("int32")
@@ -65,7 +69,6 @@ def load_ratings(force_reload=False):
 
     logging.info("📊 Ratings data loaded and cached successfully!")
     return _cached_ratings
-
 
 
 def get_model():

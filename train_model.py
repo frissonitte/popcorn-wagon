@@ -1,73 +1,75 @@
-import gc
 import logging
-import os
 import time
 
 import numpy as np
 from annoy import AnnoyIndex
 from scipy.sparse import coo_matrix
+from sklearn.decomposition import TruncatedSVD
+from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
 
-from app import create_app
 from app.utils.recommend_utils import load_ratings
 
-# Constants
-DIMENSION = 330976
-BATCH_SIZE = 500  # Adjust based on your memory capacity
+BATCH_SIZE = 500
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def train_model():
-    app = create_app()
-    with app.app_context():
-        # Load ratings data
-        logger.info("📊 Loading ratings data...")
-        ratings_df = load_ratings()
-        if ratings_df is None:
-            logger.error("❌ No rating data available!")
-            return
+def prepare_data():
+    ratings_df = load_ratings()
+    if ratings_df is None:
+        logger.error("❌ No rating data available!")
+        return None, None
 
-        # Create sparse matrix
-        logger.info("🔢 Creating sparse matrix...")
-        row = ratings_df["movieId"].values
-        col = ratings_df["userId"].values
-        data = ratings_df["rating"].values
-        sparse_matrix = coo_matrix((data, (row, col))).tocsr()
+    movie_encoder = LabelEncoder()
+    user_encoder = LabelEncoder()
+    ratings_df["movieId"] = movie_encoder.fit_transform(ratings_df["movieId"])
+    ratings_df["userId"] = user_encoder.fit_transform(ratings_df["userId"])
 
-        num_movies = sparse_matrix.shape[0]
-        logger.info(f"🎥 Number of movies: {num_movies}")
+    row = ratings_df["movieId"].values
+    col = ratings_df["userId"].values
+    data = ratings_df["rating"].values
+    return coo_matrix((data, (row, col))).tocsr(), movie_encoder
 
-        # Remove old model if exists
-        if os.path.exists("popcorn.ann"):
-            os.remove("popcorn.ann")
-            logger.info("🗑️ Old model deleted, training new model...")
 
-        # Initialize Annoy Index
-        annoy_index = AnnoyIndex(DIMENSION, "angular")
+def apply_dimensionality_reduction(sparse_matrix):
+    svd = TruncatedSVD(n_components=0.9)
+    return svd.fit_transform(sparse_matrix)
 
-        # Add items to Annoy Index in batches
-        logger.info("🏗️ Building Annoy index...")
-        for i in tqdm(range(0, num_movies, 500), desc="Adding items to Annoy index"):  # BATCH_SIZE=500
-            batch = sparse_matrix[i:i + 500].toarray().astype(np.float32)  # BATCH_SIZE=500
-            for j, vector in enumerate(batch):
-                annoy_index.add_item(i + j, vector)
 
-        # Build and save the Annoy index
-        logger.info("🔨 Building Annoy index...")
-        annoy_index.build(5)  # build(5) daha hızlı model oluşturur
-        annoy_index.save("popcorn.ann")
+def train_annoy_model(reduced_matrix, movie_encoder, trees=50):
+    num_movies, DIMENSION = reduced_matrix.shape
+    annoy_index = AnnoyIndex(DIMENSION, "angular")
 
-        logger.info(f"✅ Annoy model trained and saved! (dimension: {DIMENSION})")
+    for i in tqdm(range(num_movies), desc="Adding items to Annoy index"):
+        annoy_index.add_item(i, reduced_matrix[i].astype(np.float32))
 
-        # Clean up
-        del ratings_df, sparse_matrix
-        gc.collect()
+    annoy_index.build(trees)
+    annoy_index.save("popcorn.ann")
+    return annoy_index
+
+
+def main():
+    start_time = time.time()
+
+    logger.info("🔄 Preparing data...")
+    sparse_matrix, movie_encoder = prepare_data()
+    if sparse_matrix is None:
+        return
+
+    logger.info("🔄 Applying dimensionality reduction...")
+    reduced_matrix = apply_dimensionality_reduction(sparse_matrix)
+
+    logger.info("🔄 Training Annoy model...")
+    train_annoy_model(reduced_matrix, movie_encoder)
+
+    elapsed_time = time.time() - start_time
+    logger.info(
+        f"✅ Annoy model trained and saved! ({reduced_matrix.shape[0]} movies, {elapsed_time:.2f} sec)"
+    )
 
 
 if __name__ == "__main__":
-    start_time = time.time()
-    train_model()
-    logger.info(f"⏱️ Total execution time: {time.time() - start_time:.2f} seconds")
+    main()

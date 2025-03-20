@@ -13,3 +13,4 @@ venv/
 *.in
 *.ann
 *.json
+migrations/
