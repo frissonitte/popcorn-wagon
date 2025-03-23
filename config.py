@@ -13,5 +13,6 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     CSV_PATH = os.getenv("CSV_PATH", "app/data")
     HTML_PATH = os.getenv("HTML_PATH", "app/templates")
-    CACHE_TYPE = "RedisCache"
-    CACHE_REDIS_URL = "redis://localhost:6379/0"
+    CACHE_TYPE = "filesystem"
+    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_DIR = "app/cache"

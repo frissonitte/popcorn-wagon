@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_executor import Executor
 
-from app.extensions import db, login_manager, migrate
+from app.extensions import cache, db, login_manager, migrate
 from app.utils.recommend_utils import init_executor
 from config import Config
 
@@ -16,6 +16,7 @@ def create_app():
     migrate.init_app(app, db)
     register_filters(app)
     login_manager.init_app(app)
+    cache.init_app(app)
 
     executor = Executor(app)
     init_executor(app)

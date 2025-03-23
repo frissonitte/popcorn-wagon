@@ -4,6 +4,8 @@ import random
 import requests
 from dotenv import load_dotenv
 
+from app.extensions import cache
+
 load_dotenv()
 
 api_key = os.getenv("API_KEY")
@@ -44,10 +46,19 @@ def get_trending_movies(time_window="day"):
 
 
 def get_movie_details(movie_id):
-
     endpoint = f"movie/{movie_id}"
     params = {"language": "en-US"}
     return fetch_from_tmdb(endpoint, params=params)
+
+
+def get_movie_keywords(movie_id):
+
+    endpoint = f"movie/{movie_id}/keywords"
+    response_data = fetch_from_tmdb(endpoint)
+
+    if response_data and "keywords" in response_data:
+        return [keyword["name"] for keyword in response_data["keywords"]]
+    return []
 
 
 def search(query, page=1, include_adult=False):
@@ -60,12 +71,6 @@ def search(query, page=1, include_adult=False):
         "page": page,
     }
     return fetch_from_tmdb(endpoint, params=params)
-
-
-def get_movie_credits(movie_id):
-
-    endpoint = f"movie/{movie_id}/credits"
-    return fetch_from_tmdb(endpoint)
 
 
 def get_movie_images(movie_id):

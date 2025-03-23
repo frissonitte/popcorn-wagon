@@ -6,7 +6,7 @@ tags_file = "app/data/tags.csv"
 links_file = "app/data/links.csv"
 
 # Threshold values
-ACTIVE_USER_THRESHOLD = 350
+ACTIVE_USER_THRESHOLD = 750
 
 
 def filter_active_users():
@@ -29,21 +29,21 @@ def filter_active_users():
 
     # Get ratings data of active users only
     filtered_ratings = ratings[ratings["userId"].isin(active_users)]
-    filtered_ratings.to_csv("filtered_ratings.csv", index=False)
+    filtered_ratings.to_csv("app/data/ratings.csv", index=False)
     print(f"✅ Filtered ratings saved: {filtered_ratings.shape}")
 
     # Load tags data and get movies tagged by active users
     print("📂 Loading tags data...")
     tags = pd.read_csv(tags_file)
     filtered_tags = tags[tags["userId"].isin(active_users)]
-    filtered_tags.to_csv("filtered_tags.csv", index=False)
+    filtered_tags.to_csv("app/data/tags.csv", index=False)
     print(f"✅ Filtered tags saved: {filtered_tags.shape}")
 
     # Upload links file and get movies that active users are interacting with
     print("📂 Loading links data...")
     links = pd.read_csv(links_file)
     filtered_links = links[links["movieId"].isin(active_movies)]
-    filtered_links.to_csv("filtered_links.csv", index=False)
+    filtered_links.to_csv("app/data/links.csv", index=False)
     print(f"✅ Filtered links saved: {filtered_links.shape}")
 
 

@@ -168,3 +168,12 @@ def load_data():
         logging.error(f"An error occurred: {e}")
         db.session.rollback()
         enable_foreign_keys()
+
+
+def dimension_check():
+    users = mod.Rating["userId"].value_counts()
+    import json
+
+    config = {"dimension": len(users)}
+    with open("popcorn_config.json", "w") as f:
+        json.dump(config, f)

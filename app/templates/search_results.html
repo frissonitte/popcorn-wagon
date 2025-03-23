@@ -5,43 +5,36 @@
 {% block main %}
     <h2>Search Results for: "{{ query }}"</h2>
     {% if movies %}
-    <div class="movie-grid">
+    <div class="search-results">
         {% for movie in movies %}
-            <div class="card v4 tight">
-                <div class="wrapper">
-                    <div class="image">
-                        <div class="poster">
-                            <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
-                                {% if movie['poster_path'] %}
-                                    <img 
-                                        src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" 
-                                        srcset="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }} 500w,
-                                                https://image.tmdb.org/t/p/w780{{ movie['poster_path'] }} 780w,
-                                                https://image.tmdb.org/t/p/w1280{{ movie['poster_path'] }} 1280w"
-                                        sizes="(max-width: 768px) 90vw, 33vw"
-                                        loading="lazy"
-                                        alt="{{ movie['title'] }}" 
-                                        class="poster-image"
-                                    >
-                                {% else %}
-                                    <img 
-                                        src="{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
-                                        alt="No Image" 
-                                        class="poster-image" 
-                                        loading="lazy"
-                                    >
-                                {% endif %}
-                            </a>
-                        </div>
-                    </div>
-                    <div class="details">
-                        <div class="title">
-                            <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
-                                <h2>{{ movie['title'] }}</h2>
-                            </a>
-                            <span class="release_date">{{ movie['release_date'] }}</span>
-                        </div>
-                        <div class="overview">
+        <div class="search-result-card">
+            <div class="poster">
+                <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
+                    {% if movie['poster_path'] %}
+                        <img 
+                            src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" 
+                            alt="{{ movie['title'] }}" 
+                            class="poster-image"
+                            loading="lazy"
+                        >
+                    {% else %}
+                        <img 
+                            src="{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
+                            alt="No Image" 
+                            class="poster-image" 
+                            loading="lazy"
+                        >
+                    {% endif %}
+                </a>
+            </div>
+            <div class="details">
+                <div class="title">
+                    <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
+                        <h2>{{ movie['title'] }}</h2>
+                    </a>
+                    <span class="release-date">{{ movie['release_date'] | format_date}}</span>
+                </div>
+                <div class="overview">
                             <p>{{ movie['overview'][:250] }}...</p>
                         </div>
                     </div>
@@ -50,57 +43,10 @@
         {% endfor %}
     </div>
 
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-            {% if page > 1 %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.search', q=query, page=page-1) }}">Previous</a>
-                </li>
-                {% if page > 5 %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for('main.search', q=query, page=1) }}">1</a>
-                    </li>
-                {% endif %}
-            {% endif %}
-            
-            {% if page <= 5 %}
-                {% set start_page = 1 %}
-                {% set end_page = [5, total_pages] | min %}
-            {% else %}
-                {% set start_page = [1, page - 2] | max %}
-                {% set end_page = [total_pages, page + 2] | min %}
-            {% endif %}
-        
-            {% if start_page > 2 %}
-                <li class="page-item disabled">
-                    <span class="page-link">...</span>
-                </li>
-            {% endif %}
-        
-            {% for p in range(start_page, end_page + 1) %}
-                <li class="page-item {% if p == page %}active{% endif %}">
-                    <a class="page-link" href="{{ url_for('main.search', q=query, page=p) }}">{{ p }}</a>
-                </li>
-            {% endfor %}
-        
-            {% if end_page < (total_pages - 1) %}
-                <li class="page-item disabled">
-                    <span class="page-link">...</span>
-                </li>
-            {% endif %}
-        
-            {% if page < total_pages %}
-                {% if end_page < total_pages %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for('main.search', q=query, page=total_pages) }}">{{ total_pages }}</a>
-                    </li>
-                {% endif %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.search', q=query, page=page+1) }}">Next</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+    {% with base_url=url_for('main.search', q=query), page=page, total_pages=total_pages %}
+        {% include 'includes/pagination.html' %}
+    {% endwith %}
+
     {% else %}
     <div class="alert alert-warning" role="alert">
         No movies found for "{{ query }}". Please try another search term.

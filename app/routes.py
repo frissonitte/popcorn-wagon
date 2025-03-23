@@ -3,6 +3,7 @@ import time
 from math import ceil
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask_caching import Cache
 from flask_login import current_user
 
 import app.models as m
@@ -34,12 +35,28 @@ def index():
 
 @main.route("/movie/<int:movieId>")
 def movie_details(movieId):
-    movie = tmdb.get_movie_details(movieId)
-    movie_tags = m.Tag.query.filter_by(movieId=movieId).all()
-    if movie:
-        return render_template("movie_details.html", movie=movie, movie_tags=movie_tags)
-    else:
-        flash("Movie details not found.", "danger")
+    try:
+        movie = tmdb.get_movie_details(movieId)
+
+        if not movie:
+            flash("Movie details not found.", "danger")
+            return redirect(url_for("main.index"))
+
+        movie_tags = m.Tag.query.filter_by(movieId=movieId).all()
+        user_tags = [tag.tag for tag in movie_tags]
+
+        tmdb_keywords = tmdb.get_movie_keywords(movieId)
+
+        tags = list(set(user_tags + tmdb_keywords))
+
+        with open("movie.txt", "w") as f:
+            f.write(f"{tags}")
+            f.close()
+
+        return render_template("movie_details.html", movie=movie, tags=tags)
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "danger")
         return redirect(url_for("main.index"))
 
 
@@ -101,13 +118,10 @@ def recommendator():
         all_recommendations.extend(recommendations)
 
     unique_recommendations = list(set(all_recommendations))
-    print(f"All recommendations: {all_recommendations}")
-    print(f"Unique recommendations: {unique_recommendations}")
 
     recommended_movies = []
     for movieId in unique_recommendations[:10]:
         movie_details = tmdb.get_movie_details(movieId)
-        print(f"Movie details for {movieId}: {movie_details}")
         if movie_details:
             recommended_movies.append(movie_details)
 
@@ -214,27 +228,45 @@ def edit_list(listId):
 @main.route("/remove_list", methods=["POST"])
 def remove_list():
     listId = request.form.get("listId")
-    list = m.UserList.query.get(listId)
-    if list:
-        db.session.delete(list)
-        db.session.commit()
-        flash("List removed successfully!", "success")
-    else:
-        flash("List not found.", "danger")
+    if not listId or not listId.isdigit():
+        flash("Invalid list ID.", "danger")
+        return redirect(url_for("main.lists"))
+
+    list_id = int(listId)
+    user_list = m.UserList.query.get(list_id)
+
+    if not user_list:
+        flash(f"List with ID {list_id} not found.", "danger")
+        return redirect(url_for("main.lists"))
+
+    # Proceed with deleting the list if it exists
+    db.session.delete(user_list)
+    db.session.commit()
+    flash("List removed successfully!", "success")
     return redirect(url_for("main.lists"))
 
 
 @main.route("/remove_item", methods=["POST"])
 def remove_item():
-    itemId = request.form.get("itemId")
-    item = m.UserListItems.query.get(itemId)
+    movieId = request.form.get("movieId")
+    listId = request.form.get("listId")
+
+    if not movieId or not listId:
+        flash("Invalid movie or list ID.", "danger")
+        return redirect(url_for("main.lists"))
+
+    item = m.UserListItems.query.filter_by(
+        listId=listId, movieId=movieId, userId=current_user.userId
+    ).first()
+
     if item:
         db.session.delete(item)
         db.session.commit()
-        flash("Item removed successfully!", "success")
+        flash("Movie removed successfully!", "success")
     else:
-        flash("Item not found.", "danger")
-    return redirect(url_for("main.list_details", listId=item.listId))
+        flash("Movie not found.", "danger")
+
+    return redirect(url_for("main.list_details", listId=listId))
 
 
 @main.route("/create_list", methods=["GET", "POST"])
@@ -357,7 +389,6 @@ def add_to_liked():
         new_data = m.UserMovieData(
             userId=current_user.userId,
             movieId=movieId,
-            action=m.UserAction.RATED,
             liked=new_value,
         )
         db.session.add(new_data)
