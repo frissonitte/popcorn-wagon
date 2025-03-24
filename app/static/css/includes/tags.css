@@ -1,0 +1,41 @@
+.tags {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    margin: 20px 0;
+}
+
+.tags h4 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.tags ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tags li {
+    display: inline-block;
+    margin: 5px;
+}
+
+.tags a {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    transition: background 0.3s ease-in-out;
+}
+
+.tags a:hover {
+    background: #0056b3;
+}

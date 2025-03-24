@@ -1,0 +1,25 @@
+.btn {
+    display: inline-block;
+
+    padding: 10px 20px;
+
+    font-size: 1rem;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #01b4e4;
+
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #009fd4;
+}

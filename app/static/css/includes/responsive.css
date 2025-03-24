@@ -1,0 +1,27 @@
+@media (max-width: 768px) {
+    .navbar .input-group {
+        width: 100%;
+
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .card.v4.tight .poster-image {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .card.v4.tight .poster-image {
+        height: 150px;
+    }
+}

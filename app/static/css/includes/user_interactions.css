@@ -1,0 +1,51 @@
+.add-to-list {
+    display: inline-block;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+#like-icon,
+#dislike-icon {
+    color: grey;
+    cursor: pointer;
+}
+
+.user-interactions {
+    margin-top: 20px;
+}
+
+.like-dislike {
+    display: block;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.like-dislike i {
+    font-size: 45px;
+    cursor: pointer;
+    color: #666;
+}
+
+.like-dislike i.active-like {
+    color: green;
+}
+
+.like-dislike i.active-dislike {
+    color: red;
+}
+
+#like-icon.active-like {
+    color: green;
+}
+
+#dislike-icon.active-dislike {
+    color: red;
+}
+
+.like-dislike {
+    font-size: 50px;
+    cursor: pointer;
+
+    gap: 20px;
+}

@@ -1,0 +1,64 @@
+.search-results {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.search-result-card {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.search-result-card .poster {
+    flex: 0 0 150px;
+    margin-right: 20px;
+}
+
+.search-result-card .poster-image {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.search-result-card .details {
+    flex: 1;
+}
+
+.search-result-card .title h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #000;
+}
+
+.search-result-card .title h2 a {
+    color: #000;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.search-result-card .title h2 a:hover {
+    color: #01b4e4;
+}
+
+.search-result-card .release-date {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.search-result-card .overview {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+    line-height: 1.6;
+}
