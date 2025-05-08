@@ -12,7 +12,6 @@ venv/
 *.log
 *.in
 *.ann
-*.json
 migrations/
 *.pkl
 cache/
