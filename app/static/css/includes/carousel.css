@@ -1,6 +1,7 @@
 .carousel {
     max-width: 300px;
     margin: 0 auto;
+    margin-bottom: 100px;
 }
 
 .carousel-inner {

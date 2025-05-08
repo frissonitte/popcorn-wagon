@@ -2,15 +2,21 @@
     width: 300px;
 }
 
-.nav-link,
 .navbar-brand {
     padding: 10px;
 }
 
+.nav-link {
+    color: rgb(0, 0, 0) !important;
+    margin-right: 15px;
+    padding: 10px;
+}
+
 .navbar-collapse {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
+    flex-grow: 1;
 }
 
 .navbar-toggler {
@@ -27,12 +33,22 @@
 }
 
 .navbar .input-group {
-    max-width: 500px;
-    margin-left: auto;
+    width: 100% !important;
 }
 
 .navbar .form-control {
+    height: 40px;
     border-radius: 20px 0 0 20px;
+    border-right: none;
+    width: 100%;
+}
+
+.navbar .search-form {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    max-width: 50%;
 }
 
 .navbar .btn-outline-success {
@@ -44,7 +60,7 @@
 }
 
 .navbar .btn-outline-success:hover {
-    background-color: #198754;
+    background-color: #d3c9a0;
     color: white;
 }
 
@@ -60,7 +76,8 @@
 }
 
 .navbar-brand img {
-    height: 50px;
+    height: 110px;
+    width: 110px;
 }
 
 .navbar-nav .nav-link {
@@ -73,5 +90,6 @@
 }
 
 .navbar-nav {
-    text-align: left;
+    display: flex;
+    align-items: center;
 }

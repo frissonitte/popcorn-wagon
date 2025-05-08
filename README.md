@@ -1,97 +1,184 @@
-# Popcorn Wagon 🍿🎬
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+Popcorn Wagon 🍿🎬
 
-![Popcorn Wagon Banner](app\static\images\popcorn-wagon.jpg)
+License: MIT
 
-## Table of Contents
-- [About Popcorn Wagon](#about-popcorn-wagon)
-- [Features](#features)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Project Structure](#project-structure)
-- [License](#license)
-- [Acknowledgments](#acknowledgments)
-- [Powered By](#powered-by)
+A movie recommendation platform powered by Flask, TMDB API, MovieLens dataset, and hybrid recommendation algorithms.
 
-## About Popcorn Wagon
-Popcorn Wagon is a Flask-based movie recommendation website designed to help you discover your next favorite movie. 
-It leverages the **MovieLens Latest Dataset** and the **TMDB API** to provide personalized movie recommendations and detailed information about movies.
+📌 This project was submitted as the Final Project for CS50x (Introduction to Computer Science) by HarvardX.
+Table of Contents
 
-Whether you're a cinephile or just looking for something to watch, Popcorn Wagon has got you covered!
+    About Popcorn Wagon
 
-## Features
-- **Movie Recommendations**: Get personalized movie recommendations based on the MovieLens dataset.
-- **Movie Details**: View detailed information about movies, including posters, descriptions, and ratings, powered by the TMDB API.
-- **User-Friendly Interface**: A clean and intuitive interface for exploring movies.
-- **Efficient Data Management**: Flask backend with a SQLite database for fast and reliable data storage.
+    Features
 
-## Getting Started
+    Demo
 
-### Prerequisites
-- Python 3.x
-- Flask
-- SQLite
-    
-### Installation
+    Getting Started
 
-1. **Clone the repository:**
-- git clone https://github.com/frissonitte/popcorn-wagon.git
-- cd popcorn-wagon
+        Prerequisites
 
-2. **Set up a virtual environment (optional but recommended):**
-- python -m venv venv
-- source venv/bin/activate  # On Windows: venv\Scripts\activate
+        Installation
 
-3. **Install dependencies:**
-- pip install -r requirements.txt
+    Project Structure
 
-4. **Download the MovieLens Dataset**
-- Download the [MovieLens Dataset (Full)](https://grouplens.org/datasets/movielens/latest/)
-- Extract the dataset and place the files into the **app/data** folder.
-- **DELETE the gnome-tags.csv and gnome-scores.csv files** since they are not used in this project.
-- After creating the database, **do not delete the remaining *.csv files**.
+    Reflections
 
-`Commands for:`
-5. **Setting up the database:**
-- `python data_loader.py`
-6. **Running the Flask application:**
-- `python run.py`
-7.  **Accessing the website:**
-- Ctrl-click to link in the terminal or open your browser and navigate to http://127.0.0.1:5000
+    License
 
-## Project Structure:
+    Acknowledgments
+
+    Powered By
+
+About Popcorn Wagon
+
+Popcorn Wagon is a Flask-based movie recommendation website designed to help users discover and organize their favorite movies. It combines content-based filtering (via the TMDB API) with collaborative filtering (via the MovieLens dataset) to deliver personalized recommendations.
+
+Whether you're a cinephile or just browsing, Popcorn Wagon helps you find your next movie night pick!
+Features
+
+    🔍 Search for movies using TMDB API
+
+    📄 View detailed movie info, including poster, genres, and overview
+
+    ❤️ Like / dislike movies and tag them
+
+    📝 Create and manage your own movie lists
+
+    💡 Get AI-powered recommendations based on your lists using hybrid filtering
+
+    🌐 Responsive, user-friendly interface built with Bootstrap 5
+
+    🧠 Recommender system powered by SVD + Annoy + Dask
+
+    🔐 User authentication and session management
+
+Demo
+
+You can watch the CS50 final project demo video here:
+
+📺 YouTube: https://youtu.be/YOUR_VIDEO_LINK
+🗂️ GitHub Repo: https://github.com/frissonitte/popcorn-wagon
+Getting Started
+Prerequisites
+
+    Python 3.x
+
+    Flask
+
+    SQLite
+
+    TMDB API Key (place it in your .env file as SECRET_KEY)
+
+Installation
+
+    Clone the repository:
+
+    git clone https://github.com/frissonitte/popcorn-wagon.git
+    cd popcorn-wagon
+
+    Set up a virtual environment (optional but recommended):
+
+    python -m venv venv
+    source venv/bin/activate (Windows: venv\Scripts\activate)
+
+    Install dependencies:
+
+    pip install -r requirements.txt
+
+    Download the MovieLens Dataset (Full):
+
+        https://grouplens.org/datasets/movielens/latest/
+
+        Place links.csv, ratings.csv, and tags.csv inside app/data/
+
+        DELETE gnome-tags.csv and gnome-scores.csv if included
+
+    (Optional) Filter active users and clean data:
+
+    python filter_csv.py
+
+    Set up the SQLite database:
+
+    python data_loader.py
+
+    Train the recommendation model (SVD + Annoy):
+
+    python train_model.py
+
+    Run the Flask application:
+
+    python run.py
+    or
+    flask run
+
+    Open your browser and navigate to:
+
+    http://127.0.0.1:5000
+
+Project Structure
+
 popcorn-wagon/
 ├── app/
-│   ├── data/                  # Folder for dataset files
-│   │   └── *.csv              # MovieLens .csv files
-│   ├── static/                # Static files (CSS, JS, images)
-│   ├── utils/                 # Functions
-│   ├── templates/             # HTML templates
-│   ├── __init__.py            # Flask app initialization
-│   ├── routes.py              # Flask routes
-│   ├── auth.py                # Authorization routes
-│   ├── extensions.py          # Stores app's extensions
-│   └── models.py              # Database models
-├── instance/                  # Our database will be inside this
-├── migrations/                # Handles SQLAlchemy database migrations
-├── venv/                      # Virtual environment (You need to create it first.)
-├── .env                       # Stores sensitive information.(You need to create your own)
-├── .gitignore                 # Untracked files
-├── data_loader.py             # Script to initialize the database
-├── app.py                     # Stores the flask app
-├── run.py                     # Application start point
-├── requirements.txt           # Python dependencies
-├── README.md                  # Project documentation
-└── LICENSE                    # Project license
+│ ├── data/ — Dataset files (MovieLens CSV)
+│ ├── static/ — CSS, JS, images
+│ ├── templates/ — HTML templates
+│ ├── utils/ — Utility modules
+│ ├── routes.py — Main views
+│ ├── auth.py — Login/register routes
+│ |── models.py — SQLAlchemy models
+| └── extensions.py ─ Several helpers
+├── instance/ — SQLite DB file
+├── .env — Your API key and secrets (you create this)
+├── train_model.py — SVD + Annoy training
+├── filter_csv.py — Dataset cleaner
+├── data_loader.py — Database initializer
+├── run.py — App entry point
+├── requirements.txt
+└── README.md
 
-## License:
-- This project is licensed under the MIT License. See the LICENSE file for details.
+Reflections
 
-## Acknowledgments
-- [MovieLens](https://grouplens.org/datasets/movielens/) for providing the dataset.
-- [The Movie Database (TMDB)](https://www.themoviedb.org/) for their API, which powers additional movie details and metadata.
-- [Flask](https://flask.palletsprojects.com/) for the awesome web framework.
+Popcorn Wagon helped me understand the following in depth:
 
-## Powered by
+    How web apps manage routes, sessions, and forms (Flask)
+
+    How to design a normalized SQL database (SQLAlchemy)
+
+    Recommender system logic using collaborative & content-based filtering
+
+    Model optimization using SVD + Annoy for scalable similarity search
+
+    Data cleaning and performance optimization with Pandas + Dask
+
+I plan to expand it further with:
+
+    UI Overhaul
+
+    REST API support
+
+    OAuth integration (e.g., Google login)
+
+    List importing from TMDB and IMDB
+
+    List sharing via public URLs
+
+    Dark mode and mobile-first UI improvements
+
+License
+
+MIT License — See LICENSE file for more details.
+
+Acknowledgments
+
+    CS50 Team — for a great foundation in computer science
+
+    MovieLens — for providing open-source user rating datasets
+
+    TMDB — for the movie metadata API
+
+    Flask + SQLAlchemy — for powering the backend
+
+Powered By
+
 [![TMDB](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg)](https://www.themoviedb.org/)
+MovieLens

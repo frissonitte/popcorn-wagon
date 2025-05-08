@@ -102,7 +102,7 @@
                 <ul>
                     {% for tag in tags %}
                     <li>
-                        <a class="rounded" href="/search?q={{tag}}&page=1"
+                        <a class="rounded" href="/tag_search?q={{tag}}&page=1"
                             >{{ tag }}</a
                         >
                     </li>
@@ -123,7 +123,7 @@
                     required
                 />
                 <div class="mb-3">
-                    <label for="tag" class="form-label">Add a Tag:</label>
+                    <label for="tag" class="form-label">Type Your Tag:</label>
                     <input
                         type="text"
                         class="add-tag"

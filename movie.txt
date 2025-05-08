@@ -1,0 +1,1 @@
+['musical', 'based on fairy tale', 'dwarf', 'princess', 'apple', 'live action remake', 'based on movie', 'fairy tale', 'fantasy', 'poison', 'romantic fantasy', 'evil queen']

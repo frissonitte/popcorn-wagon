@@ -25,3 +25,28 @@
         height: 150px;
     }
 }
+
+@media (max-width: 768px) {
+    .navbar .search-form {
+        width: 90%;
+        left: 5%;
+        transform: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .search-result-card .card-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .search-result-card .poster-image {
+        width: 100%;
+        height: auto;
+    }
+
+    .search-result-card .poster {
+        flex: 0 0 auto;
+    }
+}

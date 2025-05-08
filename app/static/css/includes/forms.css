@@ -12,7 +12,6 @@ form {
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    margin-left: 20px;
 }
 
 form .form-label {
@@ -23,7 +22,7 @@ form .form-label {
 
 form .form-control {
     border-radius: 5px;
-    border-color: #ccc;
+    border-color: #dad6aa;
     box-shadow: none;
     font-size: 1rem;
 }

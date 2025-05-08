@@ -1,55 +1,63 @@
-{% extends "layout.html" %}
-
-{% block title %}Search Results{% endblock %}
-
-{% block main %}
+{% extends "layout.html" %} {% block title %}Search Results{% endblock %} {%
+block main %}
+<div class="list-header">
     <h2>Search Results for: "{{ query }}"</h2>
-    {% if movies %}
-    <div class="search-results">
-        {% for movie in movies %}
-        <div class="search-result-card">
-            <div class="poster">
-                <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
-                    {% if movie['poster_path'] %}
-                        <img 
-                            src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" 
-                            alt="{{ movie['title'] }}" 
+</div>
+
+{% if movies %}
+<div class="movie-grid">
+    {% for movie in movies %}
+    <div class="card v4 tight">
+        <div class="wrapper">
+            <div class="image">
+                <div class="poster">
+                    <a
+                        href="{{ url_for('main.movie_details', movieId=movie['id']) }}"
+                        target="_blank"
+                    >
+                        {% if movie['poster_path'] %}
+                        <img
+                            src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}"
+                            alt="{{ movie['title'] }}"
                             class="poster-image"
                             loading="lazy"
-                        >
-                    {% else %}
-                        <img 
+                        />
+                        {% else %}
+                        <img
                             src="{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
-                            alt="No Image" 
-                            class="poster-image" 
+                            alt="No Image"
+                            class="poster-image"
                             loading="lazy"
-                        >
-                    {% endif %}
-                </a>
+                        />
+                        {% endif %}
+                    </a>
+                </div>
             </div>
             <div class="details">
                 <div class="title">
-                    <a href="{{ url_for('main.movie_details', movieId=movie['id']) }}" target="_blank">
+                    <a
+                        href="{{ url_for('main.movie_details', movieId=movie['id']) }}"
+                        target="_blank"
+                    >
                         <h2>{{ movie['title'] }}</h2>
                     </a>
-                    <span class="release-date">{{ movie['release_date'] | format_date}}</span>
+                    <span class="release_date"
+                        >{{ movie['release_date'] | format_date }}</span
+                    >
                 </div>
                 <div class="overview">
-                            <p>{{ movie['overview'][:250] }}...</p>
-                        </div>
-                    </div>
+                    <p>{{ movie['overview'][:250] }}...</p>
                 </div>
             </div>
-        {% endfor %}
+        </div>
     </div>
+    {% endfor %}
+</div>
 
-    {% with base_url=url_for('main.search', q=query), page=page, total_pages=total_pages %}
-        {% include 'includes/pagination.html' %}
-    {% endwith %}
-
-    {% else %}
-    <div class="alert alert-warning" role="alert">
-        No movies found for "{{ query }}". Please try another search term.
-    </div>
-    {% endif %}
-{% endblock %}
+{% with base_url=url_for('main.search', q=query), page=page,
+total_pages=total_pages %} {% include 'includes/pagination.html' %} {% endwith
+%} {% else %}
+<div class="alert alert-warning" role="alert">
+    No movies found for "{{ query }}". Please try another search term.
+</div>
+{% endif %} {% endblock %}

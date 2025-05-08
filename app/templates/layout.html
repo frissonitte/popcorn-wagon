@@ -12,7 +12,7 @@
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
           <a class="navbar-brand" href="#">
-              <img src="static/images/popcorn-wagon.jpg" alt="Logo" width="90" height="72" class="d-inline-block align-text-top">
+              <img src="static/images/popcorn-wagon.png" alt="Logo" class="d-inline-block align-text-top">
           </a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
@@ -29,14 +29,14 @@
                   {% endif %}
               </div>
 
-              <form action="{{ url_for('main.search') }}" method="POST" class="d-flex ms-auto">
-                  <div class="input-group">
-                      <input type="text" class="form-control" placeholder="Search movies..." id="navbar-search" name="query">
-                      <button class="btn btn-outline-success" type="submit">
-                          <i class="fa fa-search"></i>
-                      </button>
-                  </div>
-              </form>
+              <form action="{{ url_for('main.search') }}" method="POST" class="search-form">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search movies..." id="navbar-search" name="query">
+                    <button class="btn btn-outline-success" type="submit">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </form>
           </div>
       </div>
   </nav>
@@ -78,5 +78,6 @@
   <script src="{{ url_for('static', filename='scripts/dynamic_search.js') }}"></script>
   <script src="{{ url_for('static', filename='scripts/dynamic_bg.js') }}"></script>
   <script src="{{ url_for('static', filename='scripts/form.js') }}"></script>
+  <script src="{{ url_for('static', filename='scripts/dynamic_footer.js') }}"></script>          
 </body>
 </html>

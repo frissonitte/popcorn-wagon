@@ -50,7 +50,6 @@ def get_movie_details(movie_id):
     params = {"language": "en-US"}
     return fetch_from_tmdb(endpoint, params=params)
 
-
 def get_movie_keywords(movie_id):
 
     endpoint = f"movie/{movie_id}/keywords"
@@ -59,6 +58,28 @@ def get_movie_keywords(movie_id):
     if response_data and "keywords" in response_data:
         return [keyword["name"] for keyword in response_data["keywords"]]
     return []
+
+def get_keyword_id(keyword):
+
+    params = {"query": keyword, "api_key": api_key}
+    data = fetch_from_tmdb("search/keyword", params)
+    
+    if data and "results" in data and data["results"]:
+        return data["results"][0]["id"] 
+
+def keyword_search(keyword, page=1):
+
+    keyword_id = get_keyword_id(keyword)
+    if not keyword_id:
+        print(f"Tag '{keyword}' not found.")
+        return []
+
+    params = {"with_keywords": keyword_id, 
+              "api_key": api_key, 
+              "page":page,}
+    data = fetch_from_tmdb("discover/movie", params)
+    
+    return data.get("results", []) if data else []
 
 
 def search(query, page=1, include_adult=False):

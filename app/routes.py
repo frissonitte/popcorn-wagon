@@ -3,7 +3,6 @@ import time
 from math import ceil
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_caching import Cache
 from flask_login import current_user
 
 import app.models as m
@@ -48,10 +47,6 @@ def movie_details(movieId):
         tmdb_keywords = tmdb.get_movie_keywords(movieId)
 
         tags = list(set(user_tags + tmdb_keywords))
-
-        with open("movie.txt", "w") as f:
-            f.write(f"{tags}")
-            f.close()
 
         return render_template("movie_details.html", movie=movie, tags=tags)
 
@@ -133,8 +128,10 @@ def recommendator():
 @main.route("/lists")
 def lists():
     lists = m.UserList.query.filter_by(userId=current_user.userId).all()
+    favorite_list = next((l for l in lists if l.list_name == "Favorites"), None)
 
-    return render_template("lists.html", lists=lists)
+    return render_template("lists.html", lists=lists, favorite_list=favorite_list)
+
 
 
 @main.route("/search", methods=["GET", "POST"])
@@ -213,6 +210,42 @@ def dynamic_search():
 
     return jsonify(movies)
 
+@main.route("/tag_search")
+def tag_search():
+    query = request.args.get("q", "").strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+
+    tag_exists_in_db = db.session.query(m.Tag).filter(m.Tag.tag == query).first() is not None
+    if tag_exists_in_db:
+        tag_results = (
+            db.session.query(m.Movie.tmdbId)
+            .join(m.Tag, m.Movie.movieId == m.Tag.movieId)
+            .filter(m.Tag.tag == query)
+            .distinct()
+            .all()
+        )
+        tag_tmdb_ids = [tmdbId for (tmdbId,) in tag_results if tmdbId]
+        tag_movie_details = [tmdb.get_movie_details(tmdb_id) for tmdb_id in tag_tmdb_ids]
+    
+    keyword_results = tmdb.keyword_search(query, page=page)
+    combined_results = tag_movie_details + keyword_results
+
+    if not combined_results:
+        flash(f"No results found for '{query}'.", "warning")
+
+    movies = combined_results
+    total_pages = 1
+    total_results = len(movies)
+
+    return render_template(
+        "search_results.html",
+        movies=movies,
+        query=query,
+        page=page,
+        total_pages=total_pages,
+        total_results=total_results,
+    )
 
 @main.route("/edit_list/<int:listId>", methods=["GET", "POST"])
 def edit_list(listId):
@@ -239,7 +272,6 @@ def remove_list():
         flash(f"List with ID {list_id} not found.", "danger")
         return redirect(url_for("main.lists"))
 
-    # Proceed with deleting the list if it exists
     db.session.delete(user_list)
     db.session.commit()
     flash("List removed successfully!", "success")
@@ -377,14 +409,12 @@ def add_to_liked():
     if user_data:
         if user_data.liked == new_value:
             user_data.liked = None
+            db.session.commit()
             flash("Your preference has been removed.", "info")
         else:
             user_data.liked = new_value
-            flash(
-                f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!",
-                "success",
-            )
-        db.session.commit()
+            db.session.commit()
+            flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
     else:
         new_data = m.UserMovieData(
             userId=current_user.userId,
@@ -393,12 +423,36 @@ def add_to_liked():
         )
         db.session.add(new_data)
         db.session.commit()
-        flash(
-            f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!",
-            "success",
-        )
+        flash(f"Movie {'liked' if new_value == 1 else 'disliked'} successfully!", "success")
+
+    if new_value == 1:
+        favorite_list = m.UserList.query.filter_by(userId=current_user.userId, list_name="Favorites").first()
+
+        if not favorite_list:
+            favorite_list = m.UserList(
+                userId=current_user.userId,
+                list_name="Favorites",
+                background_image=url_for("static", filename="images/No-Image-Placeholder.svg")
+            )
+            db.session.add(favorite_list)
+            db.session.commit()
+
+        already_in_list = m.UserListItems.query.filter_by(
+            userId=current_user.userId, listId=favorite_list.listId, movieId=movieId
+        ).first()
+
+        if not already_in_list:
+            favorite_item = m.UserListItems(
+                userId=current_user.userId,
+                listId=favorite_list.listId,
+                movieId=movieId
+            )
+            db.session.add(favorite_item)
+            db.session.commit()
+            flash("Movie also added to your Favorites list.", "info")
 
     return redirect(url_for("main.movie_details", movieId=movieId))
+
 
 
 @main.route("/add_to_tags", methods=["POST"])

@@ -1,36 +1,75 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block title %}Lists{% endblock %} {% block main
+%}
+<div class="lists-header">
+    <h2>My Lists</h2>
+    <a href="{{ url_for('main.create_list') }}" class="btn btn-primary"
+        >Create List</a
+    >
+</div>
 
-{% block title %}Lists{% endblock %}
-
-{% block main %}
-    <div class="lists-header">
-        <h2>My Lists</h2>
-        <a href="{{ url_for('main.create_list') }}" class="btn btn-primary">Create List</a>
+{% if lists %}
+<div class="lists-grid">
+    {% if favorite_list %}
+    <div class="list-card">
+        <a
+            href="{{ url_for('main.list_details', listId=favorite_list.listId) }}"
+            class="list-background"
+        >
+            <img
+                src="{{ url_for('static', filename='images/favorites.png') }}"
+                alt="favorites"
+                class="list-background-image"
+            />
+            <div class="list-overlay"></div>
+        </a>
+        <div class="list-content">
+            <h3>{{ favorite_list.list_name }}</h3>
+            <p class="item-count">{{ favorite_list.items | length }} items</p>
+            <p class="create-date">
+                Created on {{ favorite_list.timestamp | format_date }}
+            </p>
+        </div>
     </div>
-
-    {% if lists %}
-    <div class="lists-grid">
-        {% for list in lists %}
-            <div class="list-card">
-                <a href="{{ url_for('main.list_details', listId=list.listId) }}" class="list-background">
-                    {% if list.background_image and list.background_image.startswith('http') %}
-                        <img src="{{ list.background_image }}" alt="{{ list.list_name }}" class="list-background-image">
-                    {% elif list.poster_image and list.poster_image.startswith('http') %}
-                        <img src="{{ list.poster_image }}" alt="{{ list.list_name }}" class="list-background-image">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}" alt="No Image" class="list-background-image">
-                    {% endif %}
-                    <div class="list-overlay"></div>
-                </a>
-                <div class="list-content">
-                    <h3>{{ list.list_name }}</h3>
-                    <p class="item-count">{{ list.items | length }} items</p>
-                    <p class="create-date">Created on {{ list.timestamp | format_date }}</p>
-                </div>
-            </div>
-        {% endfor %}
+    {% endif %} {% for list in lists %} {% if not favorite_list or list.listId
+    != favorite_list.listId %}
+    <div class="list-card">
+        <a
+            href="{{ url_for('main.list_details', listId=list.listId) }}"
+            class="list-background"
+        >
+            {% if list.background_image and
+            list.background_image.startswith('http') %}
+            <img
+                src="{{ list.background_image }}"
+                alt="{{ list.list_name }}"
+                class="list-background-image"
+            />
+            {% elif list.poster_image and list.poster_image.startswith('http')
+            %}
+            <img
+                src="{{ list.poster_image }}"
+                alt="{{ list.list_name }}"
+                class="list-background-image"
+            />
+            {% else %}
+            <img
+                src="{{ url_for('static', filename='images/No-Image-Placeholder.svg') }}"
+                alt="No Image"
+                class="list-background-image"
+            />
+            {% endif %}
+            <div class="list-overlay"></div>
+        </a>
+        <div class="list-content">
+            <h3>{{ list.list_name }}</h3>
+            <p class="item-count">{{ list.items | length }} items</p>
+            <p class="create-date">
+                Created on {{ list.timestamp | format_date }}
+            </p>
+        </div>
     </div>
-    {% else %}
-    <p>You have no lists yet.</p>
-    {% endif %}
-{% endblock %}
+    {% endif %} {% endfor %}
+</div>
+{% else %}
+<p>You have no lists yet.</p>
+{% endif %} {% endblock %}
