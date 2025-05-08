@@ -56,7 +56,7 @@ Demo
 
 You can watch the CS50 final project demo video here:
 
-📺 YouTube: https://youtu.be/YOUR_VIDEO_LINK
+📺 YouTube: https://youtu.be/GBsyBuIxiC8
 🗂️ GitHub Repo: https://github.com/frissonitte/popcorn-wagon
 Getting Started
 Prerequisites
