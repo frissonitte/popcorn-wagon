@@ -1,6 +1,7 @@
 #  Popcorn Wagon
 
 ###  A Personalized Movie Recommendation Platform
+A hybrid recommender system powered by Flask, TMDB API, and MovieLens data.
 
  **Video Demo:** [Watch on YouTube](https://youtu.be/GBsyBuIxiC8)  
  **GitHub Repo:** [github.com/frissonitte/popcorn-wagon](https://github.com/frissonitte/popcorn-wagon)
@@ -42,6 +43,8 @@
 -    Hybrid AI-powered recommendations using SVD + Annoy
 -    User authentication and session management
 -    Responsive UI built with Bootstrap 5
+- Login and register functionality with secure session management
+
 
 ---
 
@@ -52,7 +55,8 @@
 -   Python 3.x
 -   Flask
 -   SQLite
--   TMDB API Key (stored in a `.env` file as `SECRET_KEY`)
+-   TMDB API Key (stored in a .env file as TMDB_API_KEY)
+    (Also set a secure SECRET_KEY for Flask sessions)
 
 ### Installation
 
@@ -153,7 +157,7 @@ Planned enhancements:
 
 ---
 
-##License
+## License
 
 MIT License — See [LICENSE](LICENSE) for details.
 
