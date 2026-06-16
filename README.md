@@ -1,13 +1,14 @@
-# 🍿 Popcorn Wagon
+#  Popcorn Wagon
 
-### 🎬 A Personalized Movie Recommendation Platform
+###  A Personalized Movie Recommendation Platform
+A hybrid recommender system powered by Flask, TMDB API, and MovieLens data.
 
-📺 **Video Demo:** [Watch on YouTube](https://youtu.be/GBsyBuIxiC8)  
-🔗 **GitHub Repo:** [github.com/frissonitte/popcorn-wagon](https://github.com/frissonitte/popcorn-wagon)
+ **Video Demo:** [Watch on YouTube](https://youtu.be/GBsyBuIxiC8)  
+ **GitHub Repo:** [github.com/frissonitte/popcorn-wagon](https://github.com/frissonitte/popcorn-wagon)
 
 ---
 
-## 📖 Table of Contents
+##  Table of Contents
 
 -   [About](#about)
 -   [Features](#features)
@@ -23,37 +24,39 @@
 
 ---
 
-## 📌 About
+##  About
 
 **Popcorn Wagon** is a Flask-powered web application that helps users discover and manage movies they love. It leverages a hybrid recommendation engine that combines:
 
--   ✅ Content-based filtering (TMDB API)
--   ✅ Collaborative filtering (MovieLens + SVD + Annoy)
+-    Content-based filtering (TMDB API)
+-    Collaborative filtering (MovieLens + SVD + Annoy)
 
-Whether you're a cinephile or just browsing, Popcorn Wagon will help you find your next favorite movie!
-
----
-
-## ✨ Features
-
--   🔍 Search movies via the TMDB API
--   🎞️ View movie details: posters, genres, overviews
--   ❤️ Like/dislike movies and add custom tags
--   📝 Create and manage personalized movie lists
--   🧠 Hybrid AI-powered recommendations using SVD + Annoy
--   🔐 User authentication and session management
--   🌐 Responsive UI built with Bootstrap 5
 
 ---
 
-## 🚀 Getting Started
+##  Features
+
+-    Search movies via the TMDB API
+-    View movie details: posters, genres, overviews
+-    Like/dislike movies and add custom tags
+-    Create and manage personalized movie lists
+-    Hybrid AI-powered recommendations using SVD + Annoy
+-    User authentication and session management
+-    Responsive UI built with Bootstrap 5
+- Login and register functionality with secure session management
+
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
 -   Python 3.x
 -   Flask
 -   SQLite
--   TMDB API Key (stored in a `.env` file as `SECRET_KEY`)
+-   TMDB API Key (stored in a .env file as TMDB_API_KEY)
+    (Also set a secure SECRET_KEY for Flask sessions)
 
 ### Installation
 
@@ -104,7 +107,7 @@ http://127.0.0.1:5000
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 popcorn-wagon/
@@ -129,7 +132,7 @@ popcorn-wagon/
 
 ---
 
-## 💭 Reflections
+## Reflections
 
 This project taught me:
 
@@ -141,7 +144,7 @@ This project taught me:
 
 ---
 
-## 📈 Roadmap
+## Roadmap
 
 Planned enhancements:
 
@@ -154,13 +157,13 @@ Planned enhancements:
 
 ---
 
-## 🪪 License
+## License
 
 MIT License — See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 -   CS50 team — for the CS foundation
 -   MovieLens — for the public dataset
