@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit List{% endblock %}
+
+{% block main %}
+<form action="{{ url_for('main.edit_list', listId=list.listId) }}" method="POST">
+    <label for="list_name">List Name:</label>
+    <input type="text" id="list_name" name="list_name" value="{{ list.list_name }}" required>
+
+    <button type="submit">Save</button>
+    <a href="{{ url_for('main.list_details', listId=list.listId) }}">Cancel</a>
+</form>
+{% endblock %}

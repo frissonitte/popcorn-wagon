@@ -3,7 +3,7 @@ import time
 from math import ceil
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 import app.models as m
 import tmdb_api as tmdb
@@ -56,6 +56,7 @@ def movie_details(movieId):
 
 
 @main.route("/list_details/<int:listId>")
+@login_required
 def list_details(listId):
     page = request.args.get("page", 1, type=int)
     per_page = 10
@@ -216,6 +217,7 @@ def tag_search():
     page = request.args.get("page", 1, type=int)
     per_page = 10
 
+    tag_movie_details = []
     tag_exists_in_db = db.session.query(m.Tag).filter(m.Tag.tag == query).first() is not None
     if tag_exists_in_db:
         tag_results = (
@@ -227,7 +229,7 @@ def tag_search():
         )
         tag_tmdb_ids = [tmdbId for (tmdbId,) in tag_results if tmdbId]
         tag_movie_details = [tmdb.get_movie_details(tmdb_id) for tmdb_id in tag_tmdb_ids]
-    
+
     keyword_results = tmdb.keyword_search(query, page=page)
     combined_results = tag_movie_details + keyword_results
 
@@ -248,6 +250,7 @@ def tag_search():
     )
 
 @main.route("/edit_list/<int:listId>", methods=["GET", "POST"])
+@login_required
 def edit_list(listId):
     list = m.UserList.query.get_or_404(listId)
     if request.method == "POST":
@@ -259,6 +262,7 @@ def edit_list(listId):
 
 
 @main.route("/remove_list", methods=["POST"])
+@login_required
 def remove_list():
     listId = request.form.get("listId")
     if not listId or not listId.isdigit():
@@ -279,6 +283,7 @@ def remove_list():
 
 
 @main.route("/remove_item", methods=["POST"])
+@login_required
 def remove_item():
     movieId = request.form.get("movieId")
     listId = request.form.get("listId")
@@ -302,6 +307,7 @@ def remove_item():
 
 
 @main.route("/create_list", methods=["GET", "POST"])
+@login_required
 def create_list():
     if request.method == "POST":
         list_name = request.form.get("list_name")
@@ -353,6 +359,7 @@ def create_list():
 
 
 @main.route("/add_to_list", methods=["POST"])
+@login_required
 def add_to_list():
     movieId = request.form.get("movieId")
     listId = request.form.get("listId")
@@ -386,6 +393,7 @@ def add_to_list():
 
 
 @main.route("/add_to_liked", methods=["POST"])
+@login_required
 def add_to_liked():
     movieId = request.form.get("movieId")
     action = request.form.get("action")
@@ -456,6 +464,7 @@ def add_to_liked():
 
 
 @main.route("/add_to_tags", methods=["POST"])
+@login_required
 def add_to_tags():
     movieId = request.form.get("movieId")
     tag_text = request.form.get("tag")
